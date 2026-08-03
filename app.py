@@ -1603,7 +1603,6 @@ else:
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     <span>00:00.0s</span>
                 </div>
-                <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
             </div>
 
             <!-- Output Tabs & Export/Import -->
@@ -1794,7 +1793,7 @@ else:
                 if (!response.ok) {
                     const err = await response.json();
                     alert("Lỗi import: " + (err.detail || "Không thể nạp tệp"));
-                    statusMsg.innerText = "❌ Lỗi import tệp.";
+                    if (statusMsg) statusMsg.innerText = "❌ Lỗi import tệp.";
                     return;
                 }
                 const data = await response.json();
@@ -1810,7 +1809,7 @@ else:
                 `;
             } catch (err) {
                 alert("Lỗi kết nối import: " + err.message);
-                statusMsg.innerText = "❌ Lỗi import tệp.";
+                if (statusMsg) statusMsg.innerText = "❌ Lỗi import tệp.";
             } finally {
                 e.target.value = '';
             }
@@ -2009,7 +2008,7 @@ else:
             btn.disabled = true;
             btnSpinner.style.display = 'inline-block';
             btnText.innerText = 'Đang chạy...';
-            statusMsg.innerText = 'Đang trích xuất dữ liệu...';
+            if (statusMsg) statusMsg.innerText = 'Đang trích xuất dữ liệu...';
 
             startTimer();
 
@@ -2034,7 +2033,7 @@ else:
                 if (!response.ok) {
                     const errText = await response.text();
                     alert("Lỗi Server: " + errText);
-                    statusMsg.innerText = "Có lỗi xảy ra khi thực thi OCR Stream.";
+                    if (statusMsg) statusMsg.innerText = "Có lỗi xảy ra khi thực thi OCR Stream.";
                     return;
                 }
 
@@ -2066,7 +2065,7 @@ else:
                             appendPageStitchUI(pageObj);
                         } else if (eventName === 'complete') {
                             const totalSec = stopTimer();
-                            statusMsg.innerText = `Hoàn tất trong ${totalSec}s`;
+                            if (statusMsg) statusMsg.innerText = `Hoàn tất trong ${totalSec}s`;
                         }
                     }
                 }
