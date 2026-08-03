@@ -17,19 +17,109 @@
 
 ---
 
-## 📖 Hướng Dẫn Cài Đặt & Sử Dụng Cho Máy Mới (Fresh Machine Setup)
+## 📸 Giao Diện Trực Quan (Demo Showcase)
 
-Nếu bạn vừa `git clone` dự án này về một máy chủ/máy tính mới, hãy làm theo đúng **4 bước đơn giản** dưới đây để đưa hệ thống vào hoạt động:
+<div align="center">
+
+### 🎨 Giao Diện Notion Minimalist Studio UI
+![Demo UI Showcase 1](assets/demo/demo_ui_full.png)
+*Giao diện Notion Trắng & Xanh Emerald tối giản với 1 thanh duy nhất, hỗ trợ 4 Tab hiển thị kết quả và bộ đếm thời gian thực*
+
+<br/>
+
+### 📊 Xem Cấu Trúc JSON & Bộ Xuất 5 Định Dạng File
+![Demo UI Showcase 2](assets/demo/demo_json_export.png)
+*Tab JSON chi tiết chứa đầy đủ tọa độ Bounding Box, kích thước trang, thời gian xử lý và menu Xuất File (Word, PDF, MD, TXT, JSON)*
+
+</div>
+
+---
+
+## 🏗️ Kiến Trúc Hệ Thống (System Architecture)
+
+Sơ đồ thể hiện toàn bộ luồng xử lý từ Client, FastAPI Web Server, PyTorch GPU Model Engine, cho tới Bộ xử lý hậu văn bản và 4 Tab xuất kết quả Studio:
+
+```mermaid
+flowchart TD
+    subgraph ClientLayer["🖥️ 1. Client & Access Layer"]
+        A1["🌐 Modern Web Studio (Notion White & Emerald UI)"]
+        A2["💻 Terminal CLI Tool (scripts/ocr_cli.py)"]
+        A3["📡 External REST API (cURL / Python Integrations)"]
+    end
+
+    subgraph ServerLayer["⚡ 2. FastAPI Web Server & API Layer (app.py)"]
+        B1["Stream Endpoint: POST /v1/ocr/stream"]
+        B2["Export Endpoints: Word / PDF / MD / TXT / JSON"]
+        B3["Import Endpoint: POST /v1/import/file"]
+    end
+
+    subgraph PipelineLayer["⚙️ 3. High-Performance Processing Pipeline"]
+        C1["PDF / Image Upload Parser & Multi-page Handler"]
+        C2{"Processing Mode Selection"}
+        C3["Gundam Mode (640px Fine-Grained Chunking)"]
+        C4["Base Mode (1024px High-Speed Page Layout)"]
+        C5["PyMuPDF 220 DPI High-Res Pre-renderer"]
+    end
+
+    subgraph AIEngine["🧠 4. PyTorch GPU Inference Engine"]
+        D1["Baidu Unlimited-OCR Transformer Model (bfloat16)"]
+        D2["NVIDIA Tensor Core Acceleration (RTX GPU)"]
+        D3["Automatic PyTorch VRAM Cache Cleansing (gc + cuda.empty_cache)"]
+    end
+
+    subgraph PostProcessor["🔧 5. Administrative Post-Corrector & Live Sync"]
+        E1["Vietnamese Administrative Corrector (src/core/corrector.py)"]
+        E2["Date Noise Cleanup & Invalid Day Logic Normalizer (>31 Days)"]
+        E3["Live Interactive Markdown Editor (Tab 2 -> Tab 1 Real-time Sync)"]
+    end
+
+    subgraph OutputLayer["📥 6. Studio Output & Multi-Format Exporter"]
+        F1["🎨 Tab 1: Design View (Formatted Document Studio Cards)"]
+        F2["📝 Tab 2: Clean Markdown (Editable Input Stream)"]
+        F3["🔍 Tab 3: Raw Bounding Box (<|det|> Coords)"]
+        F4["📊 Tab 4: Full JSON Structure (BBoxes, Layout & Timings)"]
+        F5["Unified Exporter: Word (.docx) | PDF (.pdf) | Markdown (.md) | Text (.txt) | JSON (.json)"]
+    end
+
+    %% Flow connections
+    A1 & A2 & A3 -->|Upload Documents| ServerLayer
+    B1 --> C1 --> C2
+    C2 -->|Mode: Gundam| C3 --> C5
+    C2 -->|Mode: Base| C4 --> C5
+    C5 -->|220 DPI Image Batches| D1
+    D1 <-->|bfloat16 CUDA| D2
+    D1 --> D3
+    D1 -->|Raw OCR Stream| E1
+    E1 --> E2 --> E3
+    E3 --> OutputLayer
+    F1 & F2 & F3 & F4 --> F5
+```
+
+---
+
+## ✨ Các Tính Năng Nổi Bật (Key Features)
+
+* **⚡ Real-Time SSE Streaming (`POST /v1/ocr/stream`)**: Giảm thời gian chờ trang đầu tiên xuống **~3 giây**.
+* **🎨 Notion-Style Minimalist Single Toolbar**: Thanh công cụ gộp phẳng 1 dòng duy nhất, tối ưu 100% không gian hiển thị kết quả.
+* **🔘 4 Tab Xem Kết Quả Chi Tiết**:
+  * **Design**: Giao diện thẻ trình bày kết quả dạng bài viết đẹp mắt.
+  * **Markdown**: Văn bản Markdown sạch có thể **chỉnh sửa trực tiếp (Editable)**.
+  * **Raw**: Chứa mã OCR gốc và thẻ tọa độ Bounding Box `<|det|>`.
+  * **JSON**: Cấu trúc dữ liệu JSON đầy đủ thông tin trang, kích thước, vị trí & thời gian.
+* **📥 Menu Xuất 5 Định Dạng File**: Xuất nhanh sang **Word (`.docx`)**, **PDF (`.pdf`)**, **Markdown (`.md`)**, **Text (`.txt`)** và **JSON (`.json`)**.
+* **🇻🇳 Tự Động Sửa Lỗi Văn Bản Hành Chính Việt Nam**: Bộ từ điển hậu xử lý thông minh tự động sửa lỗi chính tả (`THÙ LAO`, `TỜ TRÌNH`, `KHOẢN CHI PHÍ`, `ỦY BAN`) và tự động dọn rác dấu chấm ngày tháng (`ngày 25 tháng 7 năm 2025`).
+
+---
+
+## 📖 Hướng Dẫn Cài Đặt & Sử Dụng (Quick Start)
 
 ### ⚙️ Điều Kiện Cần (Prerequisites)
 * **Hệ điều hành**: Linux (Khuyên dùng Ubuntu 20.04 / 22.04 / 24.04 LTS).
-* **Card đồ họa**: Card rời NVIDIA có VRAM ≥ 8GB (Đã cài driver NVIDIA, gõ `nvidia-smi` thấy nhận card).
+* **Card đồ họa**: Card rời NVIDIA có VRAM ≥ 8GB (Đã cài driver NVIDIA).
 
 ---
 
 ### 🛠️ BƯỚC 1: Tải Mã Nguồn
-
-Mở Terminal trên máy mới và chạy lệnh:
 ```bash
 git clone https://github.com/chinhanxt/chinhan_OCR.git
 cd chinhan_OCR
@@ -37,16 +127,13 @@ cd chinhan_OCR
 
 ---
 
-### 🛠️ BƯỚC 2: Cài Đặt Môi Trường Docker & GPU Driver (Nếu máy chưa có)
-
-Nếu máy tính mới của bạn **chưa cài Docker** hoặc **chưa nhận GPU trong Docker**, hãy copy toàn bộ lệnh dưới đây và dán vào Terminal để cài tự động:
-
+### 🛠️ BƯỚC 2: Cài Đặt Môi Trường Docker & GPU Driver
 ```bash
 # 1. Cài đặt Docker & Docker Compose
 sudo apt update && sudo apt install -y docker.io docker-compose-v2
 sudo usermod -aG docker $USER
 
-# 2. Cài đặt NVIDIA Container Toolkit (Giúp Docker nhận Card GPU)
+# 2. Cài đặt NVIDIA Container Toolkit
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
 curl -s -L https://nvidia.github.io/libnvidia-container/experimental/deb/nvidia-container-toolkit.list | \
   sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
@@ -59,86 +146,29 @@ sudo systemctl restart docker
 ---
 
 ### 🛠️ BƯỚC 3: Khởi Chạy Ứng Dụng (1-Click Start)
-
-Chạy lệnh Docker Compose để dựng container và tải mô hình AI tự động:
-
 ```bash
 docker compose up -d
 ```
 
-> 📌 **Lưu ý ở lần chạy đầu tiên**:
-> Container sẽ tự động build môi trường và tải mô hình AI **Baidu Unlimited-OCR** từ Hugging Face. Quá trình này mất khoảng **2 - 5 phút** tùy thuộc vào tốc độ mạng.
-
 ---
 
-### 🛠️ BƯỚC 4: Kiểm Tra Trạng Thái Hoạt Động
-
-Theo dõi nhật ký khởi động của container bằng lệnh:
+### 🛠️ BƯỚC 4: Kiểm Tra Trạng Thái & Truy Cập
+Theo dõi nhật ký khởi động:
 ```bash
 docker logs -f unlimited_ocr_unsloth_container
 ```
-
-Khi Terminal xuất hiện dòng chữ sau là hệ thống đã sẵn sàng 100%:
-```text
-[INFO] Model loaded on GPU: NVIDIA GeForce RTX ...
-INFO: Application startup complete.
-INFO: Uvicorn running on http://0.0.0.0:8000
-```
-*(Bấm `Ctrl + C` để thoát khỏi màn hình xem log)*.
+Mở trình duyệt web tại: `http://localhost:3000/` (hoặc `http://<IP_MÁY_CHỦ>:3000/`).
 
 ---
 
-## 🖥️ HƯỚNG DẪN SỬ DỤNG HỆ THỐNG
+## 💻 Hướng Dẫn Sử Dụng CLI & REST API
 
-### 🎯 Cách 1: Sử Dụng Giao Diện Web UI (Dễ Nhất)
-
-1. Mở trình duyệt web (Chrome, Edge, Firefox...).
-2. Truy cập theo đường dẫn:
-   * **Nếu mở trên cùng máy**: `http://localhost:3000/`
-   * **Nếu mở từ máy khác trong mạng LAN**: `http://<IP_MÁY_CHỦ>:3000/` *(Ví dụ: `http://192.168.1.50:3000/`)*
-3. **Cách dùng**: Kéo thả tệp PDF hoặc ảnh tài liệu vào ô tải lên. Kết quả OCR và bảng biểu sẽ hiển thị thời gian thực theo từng trang!
-
-> 💡 **Truy cập từ xa qua SSH (SSH Tunneling)**:
-> Nếu bạn truy cập máy chủ qua SSH từ máy tính cá nhân, hãy chạy lệnh forward port ở Terminal máy cá nhân:
-> ```bash
-> ssh -L 3000:localhost:3000 user@<IP_MÁY_CHỦ>
-> ```
-> Sau đó mở trình duyệt máy cá nhân tại: `http://localhost:3000/`
-
----
-
-### 💻 Cách 2: Sử Dụng Công Cụ Dòng Lệnh Terminal (CLI Tool)
-
-Bạn có thể trích xuất nhanh tài liệu ngay trong Terminal mà không cần mở trình duyệt:
-
-1. Cài đặt thư viện hỗ trợ (chỉ cần chạy 1 lần):
-   ```bash
-   pip install requests pymupdf pillow
-   ```
-2. **Trích xuất 1 tệp Ảnh hoặc PDF bất kỳ**:
-   ```bash
-   python3 scripts/ocr_cli.py /path/to/document.pdf -o output.txt
-   ```
-3. **Trích xuất từ Ảnh Chụp Màn Hình (Clipboard)**:
-   Chụp màn hình bất kỳ (`PrintScreen` / `Ctrl+Shift+PrintScreen`), sau đó gõ:
-   ```bash
-   python3 scripts/ocr_cli.py
-   ```
-
----
-
-### 📡 Cách 3: Tích Hợp API Vào Code Dự Án Của Bạn
-
-#### **Ví dụ bằng cURL (Terminal)**:
+### **CLI Tool (Terminal)**:
 ```bash
-curl -X 'POST' \
-  'http://localhost:3000/v1/ocr?mode=gundam' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'file=@/path/to/your_file.pdf'
+python3 scripts/ocr_cli.py /path/to/document.pdf -o output.txt
 ```
 
-#### **Ví dụ bằng Python**:
+### **REST API (Python)**:
 ```python
 import requests
 
@@ -155,34 +185,12 @@ print(result["clean_markdown"])
 
 ---
 
-## ✨ Các Tính Năng Nổi Bật (Key Features)
-
-* **⚡ Real-Time SSE Streaming (`POST /v1/ocr/stream`)**: Giảm thời gian chờ trang đầu tiên xuống **~3 giây**.
-* **🎨 Stitch Design Blueprint Web UI**: Giao diện Neon Blueprint lung linh, xem trước PDF/Ảnh gốc song song với kết quả Markdown.
-* **🔘 Page Navigation Tabs**: Tự động chia trang và tạo tab lọc nhanh (`[📄 Xem Tất Cả]`, `[Trang 1]`, `[Trang 2]`...).
-* **📊 Nhận Dạng Bảng Biểu Kinh Phí (220 DPI)**: Tự động chuyển đổi bảng số liệu thành Markdown Table (`| STT | Nội dung | Số lượng |`).
-
----
-
-## 🏗️ Kiến Trúc Hệ Thống (Architecture)
-
-```mermaid
-graph TD
-    A[Client: Web UI / CLI / REST API] -->|Multipart Upload| B[FastAPI Web Server]
-    B -->|Concurrent Pre-rendering| C[PyMuPDF 220 DPI Engine]
-    C -->|Image Batches| D[Baidu Unlimited-OCR Transformer Model]
-    D -->|NVIDIA GPU Acceleration| E[Tensor Core & TF32 Inference]
-    E -->|Chunk Stream| F[Server-Sent Events / SSE Manager]
-    F -->|Real-time Markdown Stream| A
-```
-
----
-
 ## 📂 Cấu Trúc Thư Mục Dự Án (Directory Layout)
 
 ```
 chinhan_OCR/
 ├── 📁 assets/                 # Hình ảnh logo, tài liệu minh họa & GIF demo
+│   └── 📁 demo/               # Hình ảnh Screenshot giao diện Web UI Demo
 ├── 📁 scripts/                # Công cụ CLI & script kiểm thử
 │   ├── ocr_cli.py             # Terminal CLI Tool hỗ trợ Clipboard
 │   ├── test_api.py            # Script test REST API
@@ -190,7 +198,7 @@ chinhan_OCR/
 ├── 📁 src/                    # Mã nguồn Python các module (Core Engine, API, Web UI)
 │   ├── config.py              # Cấu hình GPU & môi trường
 │   ├── api/                   # FastAPI Endpoints
-│   ├── core/                  # Engine suy luận Model & PDF Pre-render
+│   ├── core/                  # Engine suy luận Model, PDF Pre-render & Corrector
 │   └── web/                   # Web Studio Template Engine
 ├── 📄 app.py                  # Server ứng dụng FastAPI
 ├── 📄 Dockerfile              # Cấu hình môi trường Docker
@@ -204,7 +212,7 @@ chinhan_OCR/
 ## 📜 Giấy Phép & Ghi Nhận (License & Acknowledgments)
 
 Dự án được phát triển và tối ưu dựa trên mô hình học máy **[Baidu Unlimited-OCR](https://github.com/baidu/Unlimited-OCR)**.
-Mã nguồn wrapper API, tối ưu tăng tốc GPU và giao diện Web UI thuộc bản quyền dự án **chinhan_OCR**.
+Mã nguồn wrapper API, tối ưu tăng tốc GPU, bộ tự động sửa lỗi tiếng Việt và giao diện Web UI thuộc bản quyền dự án **chinhan_OCR**.
 
 <div align="center">
   <b>Made with ❤️ for High-Performance AI Document Processing</b>
