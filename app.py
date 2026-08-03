@@ -1511,11 +1511,11 @@ else:
                 <div class="mode-pills">
                     <button class="mode-pill active" id="modeGundam" onclick="selectMode('gundam')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-                        Gundam (640px)
+                        Gundam (Chi tiết)
                     </button>
                     <button class="mode-pill" id="modeBase" onclick="selectMode('base')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        Base (1024px)
+                        Base (Nhanh)
                     </button>
                 </div>
             </div>
@@ -1552,7 +1552,7 @@ else:
                     <div class="output-tabs-inline">
                         <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            Blueprint
+                            Design
                         </button>
                         <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
