@@ -685,21 +685,22 @@ else:
             --bg-page: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
-            --text-sub: #475569;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-light: #eff6ff;
+            --text-sub: #64748b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-dark: #047857;
+            --primary-light: #ecfdf5;
             --border: #e2e8f0;
             --border-hover: #cbd5e1;
-            --shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
-            --radius: 16px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            --radius: 10px;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
@@ -710,125 +711,55 @@ else:
             flex-direction: column;
         }
 
-        header {
+        main {
+            max-width: 1600px;
+            width: 100%;
+            margin: 12px auto;
+            padding: 0 16px;
+            flex: 1;
+        }
+
+        /* TOP COMPACT CONTROL BAR (NOTION STYLE) */
+        .top-control-bar {
             background: #ffffff;
-            border-bottom: 1px solid var(--border);
-            padding: 18px 36px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .brand-logo {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
-            color: white;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 22px;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
-        }
-
-        .brand-title h1 {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.4px;
-        }
-
-        .brand-title p {
-            font-size: 13px;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-
-        .header-status {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .timer-badge {
-            background: #f1f5f9;
-            color: #1e293b;
             border: 1px solid var(--border);
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 700;
-            font-family: monospace;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .gpu-badge {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 600;
+        .brand-compact {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.3px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .gpu-badge .dot {
-            width: 9px;
-            height: 9px;
+        .brand-dot {
+            width: 8px;
+            height: 8px;
             background: #10b981;
             border-radius: 50%;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-        }
-
-        main {
-            max-width: 1600px;
-            width: 100%;
-            margin: 16px auto;
-            padding: 0 20px;
-            flex: 1;
-        }
-
-        /* TOP CONTROL BAR */
-        .top-control-bar {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            flex-wrap: wrap;
         }
 
         .ctrl-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .ctrl-label {
-            font-size: 12px;
-            font-weight: 800;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-sub);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -838,85 +769,103 @@ else:
         .mode-pills {
             display: flex;
             background: #f1f5f9;
-            padding: 4px;
-            border-radius: 10px;
-            gap: 4px;
+            padding: 3px;
+            border-radius: 8px;
+            gap: 3px;
         }
 
         .mode-pill {
             border: none;
             background: transparent;
             color: var(--text-sub);
-            font-size: 12.5px;
-            font-weight: 700;
-            padding: 7px 14px;
-            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .mode-pill.active {
             background: #ffffff;
-            color: var(--primary);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            color: #047857;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            font-weight: 700;
         }
 
-        .file-input-hidden { display: none; }
+        .file-input-hidden { display: none !important; }
 
         .btn-file-select {
-            background: #eff6ff;
-            border: 1px dashed #3b82f6;
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 13px;
-            padding: 8px 16px;
-            border-radius: 9px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 7px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn-file-select:hover {
-            background: #dbeafe;
-            border-color: #1d4ed8;
+            background: #f8fafc;
+            border-color: #cbd5e1;
         }
 
         .file-info-badge {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-main);
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-sub);
             background: #f1f5f9;
-            padding: 7px 12px;
-            border-radius: 8px;
-            max-width: 240px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            max-width: 220px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
         .btn-action-compact {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: #10b981;
             color: white;
             border: none;
-            border-radius: 10px;
-            padding: 9px 20px;
-            font-size: 13px;
-            font-weight: 800;
+            border-radius: 7px;
+            padding: 6px 18px;
+            font-size: 12.5px;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
-            transition: all 0.2s ease;
+            gap: 6px;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
             white-space: nowrap;
         }
 
-        .btn-action-compact:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+        .btn-action-compact:hover:not(:disabled) {
+            background: #059669;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .timer-badge-compact {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         /* 1VS1 RESIZABLE COMPARISON CONTAINER */
@@ -1550,71 +1499,85 @@ else:
     </style>
 </head>
 <body>
-    <header>
-        <div class="brand">
-            <div class="brand-logo">AI</div>
-            <div class="brand-title">
-                <h1>Unlimited-OCR Studio</h1>
-                <p>Mô hình Nhận Dạng & Trích Xuất Tài Liệu Baidu Vision-Language AI</p>
-            </div>
-        </div>
-        <div class="header-status">
-            <div class="timer-badge" id="liveTimer">⏱️ 00:00.0s</div>
-            <div class="gpu-badge">
-                <span class="dot"></span> GPU Tăng Tốc (NVIDIA RTX 5060 Ti)
-            </div>
-        </div>
-    </header>
-
     <main>
-        <!-- Top Compact Control Toolbar -->
+        <!-- Top Compact Control Toolbar (Notion Style) -->
         <div class="top-control-bar">
+            <div class="brand-compact">
+                <span class="brand-dot"></span>
+                <span>chinhan_OCR</span>
+            </div>
+
             <div class="ctrl-group">
-                <span class="ctrl-label">1. CHẾ ĐỘ:</span>
                 <div class="mode-pills">
-                    <button class="mode-pill active" id="modeGundam" onclick="selectMode('gundam')">🤖 Gundam (640px Cắt Chi Tiết)</button>
-                    <button class="mode-pill" id="modeBase" onclick="selectMode('base')">📄 Base (1024px Toàn Trang)</button>
+                    <button class="mode-pill active" id="modeGundam" onclick="selectMode('gundam')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                        Gundam (640px)
+                    </button>
+                    <button class="mode-pill" id="modeBase" onclick="selectMode('base')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Base (1024px)
+                    </button>
                 </div>
             </div>
 
             <div class="ctrl-group">
-                <span class="ctrl-label">2. CHỌN TỆP:</span>
                 <input type="file" id="fileInput" class="file-input-hidden" accept="image/*,application/pdf,.pdf,.PDF" onchange="handleFileSelect(event)">
-                <button class="btn-file-select" onclick="triggerFileInput()">📂 Tải Ảnh / PDF</button>
+                <button class="btn-file-select" onclick="triggerFileInput()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Chọn tệp
+                </button>
                 <div class="file-info-badge" id="dropText">Chưa chọn tệp...</div>
             </div>
 
             <div class="ctrl-group">
                 <button class="btn-action-compact" id="submitBtn" onclick="executeOCR()">
                     <div class="spinner" id="btnSpinner"></div>
-                    <span id="btnText">🚀 BẮT ĐẦU TRÍCH XUẤT OCR</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span id="btnText">Chạy</span>
                 </button>
+                <div class="timer-badge-compact" id="liveTimer">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>00:00.0s</span>
+                </div>
             </div>
-            <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+            <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
         </div>
 
         <!-- Full Width Main Output Panel -->
-        <div class="panel-card" style="height: calc(100vh - 180px); min-height: 560px;">
+        <div class="panel-card" style="height: calc(100vh - 120px); min-height: 600px;">
             <div class="panel-card-header" style="flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:10px;">
                 <div style="display:flex; align-items:center; gap:14px;">
-                    <span style="font-size:16px;">📝 KẾT QUẢ TRÍCH XUẤT</span>
+                    <span style="font-size:15px; font-weight:700; color:#0f172a;">Kết quả trích xuất</span>
                     <!-- 3tab Navigation Inline -->
                     <div class="output-tabs-inline">
-                        <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ 1. BLUEPRINT DESIGN</button>
-                        <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">📄 2. MARKDOWN SẠCH</button>
-                        <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 3. RAW</button>
+                        <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            Blueprint
+                        </button>
+                        <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            Markdown
+                        </button>
+                        <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                            Raw
+                        </button>
                     </div>
                 </div>
 
                 <!-- Export & Import Actions Inline -->
                 <div class="export-actions-inline">
                     <input type="file" id="importFileInput" class="file-input-hidden" accept=".docx,.pdf,.txt,.md" onchange="handleImportFileSelect(event)">
-                    <button class="btn-exp-sm" style="background:#fef3c7; color:#b45309; border-color:#fde68a;" onclick="triggerImportFileInput()" title="Import tệp Word/PDF/TXT vào studio">📥 Import File</button>
-                    <span style="font-size:11px; font-weight:800; color:var(--text-sub); margin-left:4px;">📥 TẢI VỀ:</span>
-                    <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">📄 Word</button>
-                    <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">📕 PDF</button>
-                    <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">💾 TXT</button>
-                    <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">📋 Copy</button>
+                    <button class="btn-exp-sm" style="background:#ffffff; color:#374151; border-color:#d1d5db;" onclick="triggerImportFileInput()" title="Import tệp Word/PDF/TXT/MD">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Import
+                    </button>
+                    <span style="font-size:11px; font-weight:700; color:var(--text-sub); margin-left:4px;">Tải về:</span>
+                    <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">Word (.docx)</button>
+                    <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">PDF (.pdf)</button>
+                    <button class="btn-exp-sm btn-exp-md" onclick="downloadMD()" style="background:#ffffff; color:#047857; border-color:#a7f3d0;">Markdown (.md)</button>
+                    <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">TXT (.txt)</button>
+                    <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">Copy</button>
                 </div>
             </div>
 
@@ -1844,6 +1807,24 @@ else:
             window.URL.revokeObjectURL(url);
         }
 
+        function downloadMD() {
+            const content = window.currentCleanMarkdown || document.getElementById('cleanText').value || document.getElementById('previewArea').innerText;
+            if (!content || !content.trim() || content.includes("Tài liệu đã được trích xuất")) {
+                alert("Chưa có dữ liệu Markdown để tải về!");
+                return;
+            }
+            const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "ocr_result";
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = baseName + ".md";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+
         function copyCurrentTabContent() {
             let textToCopy = '';
             const previewPanel = document.getElementById('panelPreview');
@@ -1864,7 +1845,7 @@ else:
             }
 
             navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("📋 Đã sao chép thành công vào Clipboard!");
+                alert("Đã sao chép thành công!");
             }).catch(err => {
                 alert("Lỗi sao chép: " + err);
             });
@@ -1876,14 +1857,19 @@ else:
             const timerEl = document.getElementById('liveTimer');
             timerInterval = setInterval(() => {
                 const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
-                timerEl.innerText = `⏱️ ${elapsedSec}s`;
+                if (timerEl) {
+                    timerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>${elapsedSec}s</span>`;
+                }
             }, 100);
         }
 
         function stopTimer() {
             clearInterval(timerInterval);
             const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
-            document.getElementById('liveTimer').innerText = `⏱️ ${totalTime}s`;
+            const timerEl = document.getElementById('liveTimer');
+            if (timerEl) {
+                timerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>${totalTime}s</span>`;
+            }
             return totalTime;
         }
 
@@ -1900,8 +1886,8 @@ else:
 
             btn.disabled = true;
             btnSpinner.style.display = 'inline-block';
-            btnText.innerText = '⏳ STITCH AI ĐANG TRÍCH XUẤT...';
-            statusMsg.innerText = '⏳ Đang truyền dữ liệu và vẽ trang tài liệu...';
+            btnText.innerText = 'Đang chạy...';
+            statusMsg.innerText = 'Đang trích xuất dữ liệu...';
 
             startTimer();
 
@@ -1926,7 +1912,7 @@ else:
                 if (!response.ok) {
                     const errText = await response.text();
                     alert("Lỗi Server: " + errText);
-                    statusMsg.innerText = "❌ Có lỗi xảy ra khi thực thi OCR Stream.";
+                    statusMsg.innerText = "Có lỗi xảy ra khi thực thi OCR Stream.";
                     return;
                 }
 
@@ -1958,7 +1944,7 @@ else:
                             appendPageStitchUI(pageObj);
                         } else if (eventName === 'complete') {
                             const totalSec = stopTimer();
-                            statusMsg.innerText = `✨ Hoàn tất toàn bộ tài liệu trong ${totalSec} giây!`;
+                            statusMsg.innerText = `Hoàn tất trong ${totalSec}s`;
                         }
                     }
                 }
@@ -1968,7 +1954,7 @@ else:
             } finally {
                 btn.disabled = false;
                 btnSpinner.style.display = 'none';
-                btnText.innerText = '🚀 BẮT ĐẦU TRÍCH XUẤT OCR';
+                btnText.innerText = 'Chạy';
             }
         }
 
