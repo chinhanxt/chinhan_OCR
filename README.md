@@ -37,63 +37,13 @@
 
 ## 🏗️ Kiến Trúc Hệ Thống (System Architecture)
 
-Sơ đồ thể hiện toàn bộ luồng xử lý từ Client, FastAPI Web Server, PyTorch GPU Model Engine, cho tới Bộ xử lý hậu văn bản và 4 Tab xuất kết quả Studio:
+<div align="center">
 
-```mermaid
-flowchart TD
-    subgraph ClientLayer["🖥️ 1. Client & Access Layer"]
-        A1["🌐 Modern Web Studio (Notion White & Emerald UI)"]
-        A2["💻 Terminal CLI Tool (scripts/ocr_cli.py)"]
-        A3["📡 External REST API (cURL / Python Integrations)"]
-    end
+![System Architecture](assets/system_architecture.png)
 
-    subgraph ServerLayer["⚡ 2. FastAPI Web Server & API Layer (app.py)"]
-        B1["Stream Endpoint: POST /v1/ocr/stream"]
-        B2["Export Endpoints: Word / PDF / MD / TXT / JSON"]
-        B3["Import Endpoint: POST /v1/import/file"]
-    end
+*Sơ đồ kiến trúc tổng quan hệ thống xử lý OCR & bóc tách văn bản real-time (Client Layer, FastAPI API Gateway, High-Performance Pipeline, PyTorch GPU Inference Engine, Administrative Post-Corrector & Exporter)*
 
-    subgraph PipelineLayer["⚙️ 3. High-Performance Processing Pipeline"]
-        C1["PDF / Image Upload Parser & Multi-page Handler"]
-        C2{"Processing Mode Selection"}
-        C3["Gundam Mode (640px Fine-Grained Chunking)"]
-        C4["Base Mode (1024px High-Speed Page Layout)"]
-        C5["PyMuPDF 220 DPI High-Res Pre-renderer"]
-    end
-
-    subgraph AIEngine["🧠 4. PyTorch GPU Inference Engine"]
-        D1["Baidu Unlimited-OCR Transformer Model (bfloat16)"]
-        D2["NVIDIA Tensor Core Acceleration (RTX GPU)"]
-        D3["Automatic PyTorch VRAM Cache Cleansing (gc + cuda.empty_cache)"]
-    end
-
-    subgraph PostProcessor["🔧 5. Administrative Post-Corrector & Live Sync"]
-        E1["Vietnamese Administrative Corrector (src/core/corrector.py)"]
-        E2["Date Noise Cleanup & Invalid Day Logic Normalizer (>31 Days)"]
-        E3["Live Interactive Markdown Editor (Tab 2 -> Tab 1 Real-time Sync)"]
-    end
-
-    subgraph OutputLayer["📥 6. Studio Output & Multi-Format Exporter"]
-        F1["🎨 Tab 1: Design View (Formatted Document Studio Cards)"]
-        F2["📝 Tab 2: Clean Markdown (Editable Input Stream)"]
-        F3["🔍 Tab 3: Raw Bounding Box (<|det|> Coords)"]
-        F4["📊 Tab 4: Full JSON Structure (BBoxes, Layout & Timings)"]
-        F5["Unified Exporter: Word (.docx) | PDF (.pdf) | Markdown (.md) | Text (.txt) | JSON (.json)"]
-    end
-
-    %% Flow connections
-    A1 & A2 & A3 -->|Upload Documents| ServerLayer
-    B1 --> C1 --> C2
-    C2 -->|Mode: Gundam| C3 --> C5
-    C2 -->|Mode: Base| C4 --> C5
-    C5 -->|220 DPI Image Batches| D1
-    D1 <-->|bfloat16 CUDA| D2
-    D1 --> D3
-    D1 -->|Raw OCR Stream| E1
-    E1 --> E2 --> E3
-    E3 --> OutputLayer
-    F1 & F2 & F3 & F4 --> F5
-```
+</div>
 
 ---
 
