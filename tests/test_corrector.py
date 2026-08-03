@@ -27,5 +27,10 @@ class TestVietnameseTextCorrector(unittest.TestCase):
         expected = "THÙ LAO CÁC THÀNH VIÊN - KHOẢN CHI PHÍ - Lưu: VT"
         self.assertEqual(correct_vietnamese_text(raw), expected)
 
+    def test_date_cleanup_and_invalid_day(self):
+        raw = "(Kèm theo tờ trình ngày. 45.tháng .1. năm 2025)"
+        expected = "(Kèm theo tờ trình ngày 25 tháng 1 năm 2025)"
+        self.assertEqual(correct_vietnamese_text(raw), expected)
+
 if __name__ == "__main__":
     unittest.main()
