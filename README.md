@@ -22,17 +22,6 @@
 
 ---
 
-## 📸 Giao Diện Trực Quan (Demo Showcase)
-
-<div align="center">
-
-| 📄 **1. Tài Liệu Scan Gốc (Input Document)** | ⚡ **2. Kết Quả Bóc Tách trên Web Studio UI (OCR Output)** |
-|:---:|:---:|
-| <img src="assets/demo/demo_ui_full.png" alt="Tài Liệu Scan Gốc" width="440"/> | <img src="assets/demo/demo_json_export.png" alt="Kết Quả Web Studio UI" width="440"/> |
-| *Bản scan văn bản & bảng biểu hành chính chứa chữ viết tay và nét mờ* | *Giao diện Web Studio: Trích xuất cấu trúc bảng biểu thời gian thực (`TRANG 3 / 16`)* |
-
-</div>
-
 ---
 
 ## 🏗️ Kiến Trúc Hệ Thống (System Architecture)
