@@ -610,6 +610,7 @@ else:
     <title>Unlimited-OCR Studio | Baidu AI GPU</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -731,42 +732,173 @@ else:
         }
 
         main {
-            max-width: 1440px;
+            max-width: 1600px;
             width: 100%;
-            margin: 28px auto;
-            padding: 0 24px;
+            margin: 16px auto;
+            padding: 0 20px;
             flex: 1;
         }
 
-        .main-grid {
+        /* TOP CONTROL BAR */
+        .top-control-bar {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ctrl-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .mode-pills {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+
+        .mode-pill {
+            border: none;
+            background: transparent;
+            color: var(--text-sub);
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .mode-pill.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        .file-input-hidden { display: none; }
+
+        .btn-file-select {
+            background: #eff6ff;
+            border: 1px dashed #3b82f6;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-file-select:hover {
+            background: #dbeafe;
+            border-color: #1d4ed8;
+        }
+
+        .file-info-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            background: #f1f5f9;
+            padding: 7px 12px;
+            border-radius: 8px;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-action-compact {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-action-compact:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+        }
+
+        /* 1VS1 COMPARISON GRID */
+        .comparison-grid {
             display: grid;
-            grid-template-columns: 440px 1fr;
-            gap: 28px;
-            align-items: start;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: stretch;
         }
 
         @media (max-width: 1024px) {
-            .main-grid { grid-template-columns: 1fr; }
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .card {
+        .panel-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px;
+            padding: 16px;
             box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px);
+            min-height: 560px;
         }
 
-        .card-header {
-            font-size: 17px;
-            font-weight: 700;
+        .panel-card-header {
+            font-size: 14.5px;
+            font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 20px;
-            padding-bottom: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
+        }
+
+        .original-viewer-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
         }
 
         .section-label {
@@ -1287,57 +1419,59 @@ else:
     </header>
 
     <main>
-        <div class="main-grid">
-            <!-- Left Control Panel -->
-            <div class="card">
-                <div class="card-header">
-                    <span>📷 Chọn Tệp & Chế Độ Xử Lý</span>
+        <!-- Top Compact Control Toolbar -->
+        <div class="top-control-bar">
+            <div class="ctrl-group">
+                <span class="ctrl-label">1. CHẾ ĐỘ:</span>
+                <div class="mode-pills">
+                    <button class="mode-pill active" id="modeGundam" onclick="selectMode('gundam')">🤖 Gundam (640px Cắt Chi Tiết)</button>
+                    <button class="mode-pill" id="modeBase" onclick="selectMode('base')">📄 Base (1024px Toàn Trang)</button>
                 </div>
+            </div>
 
-                <span class="section-label">1. CHỌN CHẾ ĐỘ (MODE):</span>
-                <div class="mode-container">
-                    <div class="mode-card active" id="modeGundam" onclick="selectMode('gundam')">
-                        <div class="icon">🤖</div>
-                        <div class="details">
-                            <div class="title">Gundam Mode (Cắt & Soi Chi Tiết - 640px)</div>
-                            <div class="desc">Cắt nhỏ tài liệu để đọc chữ nhỏ, công thức toán, bảng biểu, ảnh mờ. Tỷ lệ chính xác cao nhất.</div>
-                        </div>
-                    </div>
-
-                    <div class="mode-card" id="modeBase" onclick="selectMode('base')">
-                        <div class="icon">📄</div>
-                        <div class="details">
-                            <div class="title">Base Mode (Toàn Trang & PDF - 1024px)</div>
-                            <div class="desc">Giữ nguyên toàn trang 1024px. Tối ưu cho Tệp PDF nhiều trang, sách báo & văn bản rõ ràng.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <span class="section-label">2. TẢI LÊN TỆP (ẢNH HOẶC PDF):</span>
+            <div class="ctrl-group">
+                <span class="ctrl-label">2. CHỌN TỆP:</span>
                 <input type="file" id="fileInput" class="file-input-hidden" accept="image/*,application/pdf,.pdf,.PDF" onchange="handleFileSelect(event)">
-                <div class="drop-zone" id="dropZone" onclick="triggerFileInput()">
-                    <div class="icon">📂</div>
-                    <div class="prompt" id="dropText">Kéo thả Tệp Ảnh hoặc Tệp PDF vào đây (hoặc Bấm vào để chọn tệp)</div>
-                    <div class="formats">Hỗ trợ: PDF (.pdf), JPG, PNG, WEBP, BMP</div>
-                </div>
+                <button class="btn-file-select" onclick="triggerFileInput()">📂 Tải Ảnh / PDF</button>
+                <div class="file-info-badge" id="dropText">Chưa chọn tệp...</div>
+            </div>
 
-                <button class="btn-action" id="submitBtn" onclick="executeOCR()">
+            <div class="ctrl-group">
+                <button class="btn-action-compact" id="submitBtn" onclick="executeOCR()">
                     <div class="spinner" id="btnSpinner"></div>
                     <span id="btnText">🚀 BẮT ĐẦU TRÍCH XUẤT OCR</span>
                 </button>
+            </div>
+            <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+        </div>
 
-                <div class="status-info" id="statusMsg"></div>
+        <!-- 1VS1 Split View Comparison Grid -->
+        <div class="comparison-grid">
+            <!-- Left Panel: Original File Viewer -->
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <span>📷 MÀN 1: MÀN HÌNH TỆP GỐC (PREVIEW)</span>
+                    <span style="font-size:12px; font-weight:600; color:#64748b;">🔄 Cuộn Tự Đồng Bộ</span>
+                </div>
+                <div class="original-viewer-box" id="originalViewer">
+                    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+                        <div style="font-size:40px; margin-bottom:12px;">📂</div>
+                        <div style="font-weight:700; font-size:15px; color:#64748b;">Vui lòng chọn tệp Ảnh hoặc PDF ở trên</div>
+                        <div style="font-size:13px; margin-top:6px;">Tài liệu gốc sẽ được hiển thị xem trước tại màn hình này.</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Right Results Panel -->
-            <div class="card">
-                <div class="card-header">
-                    <span>📝 Kết Quả Trích Xuất & Trình Bày</span>
+            <!-- Right Panel: 3Tab OCR Output Viewer -->
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <span>📝 MÀN 2: KẾT QUẢ TRÍCH XUẤT (3TAB)</span>
+                    <span style="font-size:12px; font-weight:600; color:#64748b;">🔄 Cuộn Tự Đồng Bộ</span>
                 </div>
 
                 <!-- Top Export & Download Toolbar -->
                 <div class="export-bar">
-                    <div class="export-label">📥 THAO TÁC & TẢI VỀ:</div>
+                    <div class="export-label">📥 TẢI VỀ:</div>
                     <div class="export-actions">
                         <button class="btn-exp btn-exp-docx" onclick="downloadDOCX()">📄 Tải Word (.docx)</button>
                         <button class="btn-exp btn-exp-pdf" onclick="downloadPDF()">📕 Tải PDF (.pdf)</button>
@@ -1357,18 +1491,18 @@ else:
                 <div class="page-nav-bar" id="pageNavBar"></div>
 
                 <!-- Tab 1: Render View -->
-                <div class="tab-panel active" id="panelPreview">
-                    <div class="preview-box" id="previewArea">Tài liệu đã được trích xuất và định dạng trình bày Y Chang Ảnh sẽ hiển thị ở đây...</div>
+                <div class="tab-panel active" id="panelPreview" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                    <div class="preview-box" id="previewArea" style="flex:1; max-height:none;">Tài liệu đã được trích xuất và định dạng trình bày Y Chang Ảnh sẽ hiển thị ở đây...</div>
                 </div>
 
                 <!-- Tab 2: Clean Markdown -->
-                <div class="tab-panel" id="panelClean">
-                    <textarea class="code-area" id="cleanText" readonly placeholder="Kết quả Markdown sạch (dùng để dán vào Word/Notion) sẽ hiển thị ở đây..."></textarea>
+                <div class="tab-panel" id="panelClean" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
+                    <textarea class="code-area" id="cleanText" readonly style="flex:1; height:100%;" placeholder="Kết quả Markdown sạch (dùng để dán vào Word/Notion) sẽ hiển thị ở đây..."></textarea>
                 </div>
 
                 <!-- Tab 3: Raw Bounding Box -->
-                <div class="tab-panel" id="panelRaw">
-                    <textarea class="code-area" id="rawText" readonly placeholder="Kết quả OCR gốc chứa các thẻ tọa độ <|det|>..."></textarea>
+                <div class="tab-panel" id="panelRaw" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
+                    <textarea class="code-area" id="rawText" readonly style="flex:1; height:100%;" placeholder="Kết quả OCR gốc chứa các thẻ tọa độ <|det|>..."></textarea>
                 </div>
             </div>
         </div>
@@ -1410,12 +1544,137 @@ else:
             });
         }
 
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
         function setFile(file) {
             currentFile = file;
             const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
             const icon = file.type.includes('pdf') || file.name.endsWith('.pdf') ? '📄' : '🖼️';
-            document.getElementById('dropText').innerHTML = `<b>${icon} Đã chọn tệp:</b> ${file.name} (${sizeMB} MB)`;
+            document.getElementById('dropText').innerText = `${icon} ${file.name} (${sizeMB} MB)`;
+            renderOriginalViewer(file);
         }
+
+        async function renderOriginalViewer(file) {
+            const viewer = document.getElementById('originalViewer');
+            if (!viewer) return;
+
+            const isPdf = file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf');
+            if (isPdf && typeof pdfjsLib !== 'undefined') {
+                viewer.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#64748b; font-weight:600;">⏳ Đang render toàn bộ trang PDF gốc...</div>';
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    viewer.innerHTML = '';
+                    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                        const page = await pdfDoc.getPage(pageNum);
+                        const viewport = page.getViewport({ scale: 1.4 });
+
+                        const pageCard = document.createElement('div');
+                        pageCard.style.marginBottom = '18px';
+                        pageCard.style.borderRadius = '10px';
+                        pageCard.style.overflow = 'hidden';
+                        pageCard.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)';
+                        pageCard.style.background = '#ffffff';
+
+                        const pageHeader = document.createElement('div');
+                        pageHeader.style.background = '#f1f5f9';
+                        pageHeader.style.padding = '6px 14px';
+                        pageHeader.style.fontSize = '12px';
+                        pageHeader.style.fontWeight = '700';
+                        pageHeader.style.color = '#334155';
+                        pageHeader.innerText = `📄 TRANG GỐC ${pageNum} / ${pdfDoc.numPages}`;
+
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        canvas.style.width = '100%';
+                        canvas.style.height = 'auto';
+                        canvas.style.display = 'block';
+
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                        pageCard.appendChild(pageHeader);
+                        pageCard.appendChild(canvas);
+                        viewer.appendChild(pageCard);
+                    }
+                } catch (err) {
+                    viewer.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">❌ Không thể render PDF: ${err.message}</div>`;
+                }
+            } else {
+                const url = URL.createObjectURL(file);
+                viewer.innerHTML = `
+                    <div style="text-align:center; margin-bottom:12px; font-weight:700; font-size:12px; color:#334155; background:#f1f5f9; padding:6px 12px; border-radius:6px;">
+                        🖼️ ẢNH GỐC TẢI LÊN (${file.name})
+                    </div>
+                    <img src="${url}" style="width:100%; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);" alt="Original Image">
+                `;
+            }
+        }
+
+        let isSyncingLeft = false;
+        let isSyncingRight = false;
+
+        function initSyncScroll() {
+            const leftBox = document.getElementById('originalViewer');
+            if (!leftBox) return;
+
+            leftBox.addEventListener('scroll', () => {
+                if (isSyncingRight) {
+                    isSyncingRight = false;
+                    return;
+                }
+                isSyncingLeft = true;
+                const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
+                if (leftMax <= 0) return;
+                const pct = leftBox.scrollTop / leftMax;
+
+                const activeRightBox = getActiveRightBox();
+                if (activeRightBox) {
+                    const rightMax = activeRightBox.scrollHeight - activeRightBox.clientHeight;
+                    if (rightMax > 0) {
+                        activeRightBox.scrollTop = pct * rightMax;
+                    }
+                }
+            });
+
+            ['previewArea', 'cleanText', 'rawText'].forEach(id => {
+                const rightBox = document.getElementById(id);
+                if (rightBox) {
+                    rightBox.addEventListener('scroll', () => {
+                        if (isSyncingLeft) {
+                            isSyncingLeft = false;
+                            return;
+                        }
+                        isSyncingRight = true;
+                        const rightMax = rightBox.scrollHeight - rightBox.clientHeight;
+                        if (rightMax <= 0) return;
+                        const pct = rightBox.scrollTop / rightMax;
+
+                        const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
+                        if (leftMax > 0) {
+                            leftBox.scrollTop = pct * leftMax;
+                        }
+                    });
+                }
+            });
+        }
+
+        function getActiveRightBox() {
+            const p1 = document.getElementById('panelPreview');
+            const p2 = document.getElementById('panelClean');
+            const p3 = document.getElementById('panelRaw');
+            if (p1 && p1.classList.contains('active')) return document.getElementById('previewArea');
+            if (p2 && p2.classList.contains('active')) return document.getElementById('cleanText');
+            if (p3 && p3.classList.contains('active')) return document.getElementById('rawText');
+            return null;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initSyncScroll();
+        });
 
         function switchOutputTab(tab) {
             document.getElementById('tabBtnPreview').classList.toggle('active', tab === 'preview');
