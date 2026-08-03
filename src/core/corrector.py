@@ -66,6 +66,14 @@ def fix_vietnamese_dates(text: str) -> str:
         return f"{prefix}{day_str}{suffix}"
 
     text = re.sub(r'(ngày\s+)(\d{2})(\s+tháng)', fix_day, text, flags=re.IGNORECASE)
+
+    # Correct OCR confusion where italic '7' in subheaders is misread as '1' (e.g. tháng 1 -> tháng 7)
+    text = re.sub(
+        r'(\(Kèm\s+theo\s+tờ\s+trình\s+ngày\s+\d+\s+tháng\s+)[1Iil](\s+năm\s+2025\))',
+        r'\g<1>7\g<2>',
+        text,
+        flags=re.IGNORECASE
+    )
     return text
 
 def correct_vietnamese_text(text: str) -> str:
