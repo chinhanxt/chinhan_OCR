@@ -429,6 +429,108 @@ async def process_ocr(
         if os.path.exists(tmp_file_path):
             os.remove(tmp_file_path)
 
+try:
+    from pydantic import BaseModel
+    class ExportDocxRequest(BaseModel):
+        markdown_text: str
+        filename: Optional[str] = "ocr_result.docx"
+except ImportError:
+    class ExportDocxRequest:
+        pass
+
+if HAS_FASTAPI:
+    @app.post("/v1/export/docx")
+    async def export_docx_endpoint(req: ExportDocxRequest):
+        if not req.markdown_text:
+            raise HTTPException(status_code=400, detail="markdown_text is empty")
+        try:
+            import docx
+            from docx.shared import Inches, Pt, RGBColor
+            from docx.enum.table import WD_TABLE_ALIGNMENT
+            from docx.oxml import OxmlElement
+            from docx.oxml.ns import qn
+        except ImportError:
+            raise HTTPException(status_code=500, detail="python-docx library not installed on server.")
+
+        doc = docx.Document()
+        for s in doc.sections:
+            s.top_margin = Inches(0.8)
+            s.bottom_margin = Inches(0.8)
+            s.left_margin = Inches(0.8)
+            s.right_margin = Inches(0.8)
+
+        lines = req.markdown_text.splitlines()
+        in_table = False
+        table_rows = []
+
+        def flush_table():
+            nonlocal in_table, table_rows
+            if not table_rows:
+                return
+            max_cols = max(len(r) for r in table_rows)
+            if max_cols > 0:
+                tbl = doc.add_table(rows=len(table_rows), cols=max_cols)
+                tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+                tbl.style = 'Table Grid'
+                for r_idx, row in enumerate(table_rows):
+                    for c_idx, cell_text in enumerate(row):
+                        if c_idx < max_cols:
+                            cell = tbl.cell(r_idx, c_idx)
+                            cell.text = cell_text.strip()
+                            if r_idx == 0:
+                                shd = OxmlElement('w:shd')
+                                shd.set(qn('w:val'), 'clear')
+                                shd.set(qn('w:color'), 'auto')
+                                shd.set(qn('w:fill'), '1E40AF')
+                                cell._tc.get_or_add_tcPr().append(shd)
+                                for p in cell.paragraphs:
+                                    for run in p.runs:
+                                        run.font.color.rgb = RGBColor(255, 255, 255)
+                                        run.font.bold = True
+            table_rows = []
+            in_table = False
+            doc.add_paragraph()
+
+        for line in lines:
+            sline = line.strip()
+            if sline.startswith('|') and sline.endswith('|'):
+                parts = [p.strip() for p in sline.split('|')[1:-1]]
+                if all(set(p) <= {'-', ':', ' '} for p in parts if p):
+                    continue
+                in_table = True
+                table_rows.append(parts)
+            else:
+                if in_table:
+                    flush_table()
+                if not sline:
+                    continue
+                if sline.startswith('# '):
+                    doc.add_heading(sline[2:], level=1)
+                elif sline.startswith('## '):
+                    doc.add_heading(sline[3:], level=2)
+                elif sline.startswith('### '):
+                    doc.add_heading(sline[4:], level=3)
+                elif sline.startswith('#### '):
+                    doc.add_heading(sline[5:], level=4)
+                elif sline.startswith('- ') or sline.startswith('* '):
+                    doc.add_paragraph(sline[2:], style='List Bullet')
+                else:
+                    doc.add_paragraph(sline)
+
+        if in_table:
+            flush_table()
+
+        buf = io.BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+        
+        out_filename = req.filename if req.filename and req.filename.endswith('.docx') else f"{req.filename or 'ocr_result'}.docx"
+        return StreamingResponse(
+            buf,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename={out_filename}"}
+        )
+
 if HAS_GRADIO:
     def gradio_ocr_process(file_obj, mode_choice):
         if file_obj is None:
@@ -507,6 +609,7 @@ else:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unlimited-OCR Studio | Baidu AI GPU</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -902,26 +1005,133 @@ else:
 
         .preview-box table {
             width: 100%;
-            border-collapse: collapse;
-            margin: 18px 0;
-            font-size: 0.92rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .preview-box th, .preview-box td {
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            font-size: 0.94rem;
+            border-radius: 10px;
+            overflow: hidden;
             border: 1px solid #cbd5e1;
-            padding: 10px 14px;
-            text-align: left;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
         .preview-box th {
-            background-color: #f1f5f9;
-            color: #0f172a;
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            color: #ffffff;
             font-weight: 700;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 2px solid #1d4ed8;
+            letter-spacing: 0.3px;
+        }
+
+        .preview-box td {
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #f1f5f9;
+            padding: 11px 16px;
+            color: #1e293b;
+            transition: background 0.15s ease;
+        }
+
+        .preview-box tr:last-child td {
+            border-bottom: none;
         }
 
         .preview-box tr:nth-child(even) {
             background-color: #f8fafc;
+        }
+
+        .preview-box tr:hover td {
+            background-color: #eff6ff;
+        }
+
+        .export-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            flex-wrap: wrap;
+        }
+
+        .export-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-exp {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .btn-exp:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .btn-exp-docx {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+        .btn-exp-docx:hover {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .btn-exp-pdf {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        .btn-exp-pdf:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
+
+        .btn-exp-txt {
+            background: #f8fafc;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+        .btn-exp-txt:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-exp-copy {
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+        .btn-exp-copy:hover {
+            background: #dcfce7;
         }
 
         .page-break-divider {
@@ -1125,10 +1335,22 @@ else:
                     <span>📝 Kết Quả Trích Xuất & Trình Bày</span>
                 </div>
 
+                <!-- Top Export & Download Toolbar -->
+                <div class="export-bar">
+                    <div class="export-label">📥 THAO TÁC & TẢI VỀ:</div>
+                    <div class="export-actions">
+                        <button class="btn-exp btn-exp-docx" onclick="downloadDOCX()">📄 Tải Word (.docx)</button>
+                        <button class="btn-exp btn-exp-pdf" onclick="downloadPDF()">📕 Tải PDF (.pdf)</button>
+                        <button class="btn-exp btn-exp-txt" onclick="downloadTXT()">💾 Tải TXT (.txt)</button>
+                        <button class="btn-exp btn-exp-copy" onclick="copyCurrentTabContent()">📋 Sao Chép</button>
+                    </div>
+                </div>
+
+                <!-- 3tab Navigation -->
                 <div class="output-tabs">
-                    <button class="tab-btn active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ Trình Bày Y Chang Ảnh</button>
-                    <button class="tab-btn" id="tabBtnClean" onclick="switchOutputTab('clean')">📝 Markdown Sạch</button>
-                    <button class="tab-btn" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 Dữ Liệu Gốc (Có Tọa Độ)</button>
+                    <button class="tab-btn active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ 1. BLUEPRINT DESIGN</button>
+                    <button class="tab-btn" id="tabBtnClean" onclick="switchOutputTab('clean')">📄 2. MARKDOWN SẠCH</button>
+                    <button class="tab-btn" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 3. DỮ LIỆU THÔ (RAW)</button>
                 </div>
 
                 <!-- Sticky Page Nav Bar for PDF Multi-page -->
@@ -1141,19 +1363,11 @@ else:
 
                 <!-- Tab 2: Clean Markdown -->
                 <div class="tab-panel" id="panelClean">
-                    <div class="toolbar">
-                        <span></span>
-                        <button class="btn-copy" onclick="copyCleanText()">📋 Sao Chép Markdown Sạch</button>
-                    </div>
                     <textarea class="code-area" id="cleanText" readonly placeholder="Kết quả Markdown sạch (dùng để dán vào Word/Notion) sẽ hiển thị ở đây..."></textarea>
                 </div>
 
                 <!-- Tab 3: Raw Bounding Box -->
                 <div class="tab-panel" id="panelRaw">
-                    <div class="toolbar">
-                        <span></span>
-                        <button class="btn-copy" onclick="copyRawText()">📋 Sao Chép Dữ Liệu Gốc</button>
-                    </div>
                     <textarea class="code-area" id="rawText" readonly placeholder="Kết quả OCR gốc chứa các thẻ tọa độ <|det|>..."></textarea>
                 </div>
             </div>
@@ -1211,6 +1425,102 @@ else:
             document.getElementById('panelPreview').classList.toggle('active', tab === 'preview');
             document.getElementById('panelClean').classList.toggle('active', tab === 'clean');
             document.getElementById('panelRaw').classList.toggle('active', tab === 'raw');
+        }
+
+        async function downloadDOCX() {
+            const markdown = document.getElementById('cleanText').value || document.getElementById('previewArea').innerText;
+            if (!markdown || !markdown.trim() || markdown.includes("Tài liệu đã được trích xuất")) {
+                alert("Chưa có dữ liệu trích xuất để tạo file Word (.docx)!");
+                return;
+            }
+            const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "ocr_result";
+            try {
+                const response = await fetch('/v1/export/docx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ markdown_text: markdown, filename: baseName + ".docx" })
+                });
+                if (!response.ok) {
+                    alert("Không thể tạo tệp Word trên server.");
+                    return;
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = baseName + ".docx";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                alert("Lỗi tải file Word (.docx): " + err.message);
+            }
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('previewArea');
+            if (!element || !element.innerText.trim() || element.innerText.includes("Tài liệu đã được trích xuất")) {
+                alert("Chưa có dữ liệu trích xuất để tạo file PDF!");
+                return;
+            }
+            const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "ocr_result";
+            const opt = {
+                margin:       [0.4, 0.4, 0.4, 0.4],
+                filename:     baseName + ".pdf",
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().set(opt).from(element).save();
+            } else {
+                window.print();
+            }
+        }
+
+        function downloadTXT() {
+            const content = document.getElementById('cleanText').value || document.getElementById('rawText').value || document.getElementById('previewArea').innerText;
+            if (!content || !content.trim() || content.includes("Tài liệu đã được trích xuất")) {
+                alert("Chưa có dữ liệu để tải về!");
+                return;
+            }
+            const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "ocr_result";
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = baseName + ".txt";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function copyCurrentTabContent() {
+            let textToCopy = '';
+            const previewPanel = document.getElementById('panelPreview');
+            const cleanPanel = document.getElementById('panelClean');
+            const rawPanel = document.getElementById('panelRaw');
+
+            if (previewPanel.classList.contains('active')) {
+                textToCopy = document.getElementById('previewArea').innerText;
+            } else if (cleanPanel.classList.contains('active')) {
+                textToCopy = document.getElementById('cleanText').value;
+            } else if (rawPanel.classList.contains('active')) {
+                textToCopy = document.getElementById('rawText').value;
+            }
+
+            if (!textToCopy || !textToCopy.trim() || textToCopy.includes("Tài liệu đã được trích xuất")) {
+                alert("Không có nội dung để sao chép!");
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("📋 Đã sao chép thành công vào Clipboard!");
+            }).catch(err => {
+                alert("Lỗi sao chép: " + err);
+            });
         }
 
         function startTimer() {
