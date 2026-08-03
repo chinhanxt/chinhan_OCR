@@ -1620,6 +1620,10 @@ else:
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                         Raw
                     </button>
+                    <button class="tab-btn-sm" id="tabBtnJson" onclick="switchOutputTab('json')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"/><path d="M14 12a1 1 0 0 1 1 1v1a1 1 0 0 0 1 1 1 1 0 0 0-1 1v1a1 1 0 0 1-1 1"/></svg>
+                        JSON
+                    </button>
                 </div>
 
                 <div class="export-actions-inline">
@@ -1652,6 +1656,10 @@ else:
                             <button class="dropdown-item" onclick="triggerExport('txt')">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
                                 Text (.txt)
+                            </button>
+                            <button class="dropdown-item" onclick="triggerExport('json')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"/><path d="M14 12a1 1 0 0 1 1 1v1a1 1 0 0 0 1 1 1 1 0 0 0-1 1v1a1 1 0 0 1-1 1"/></svg>
+                                JSON (.json)
                             </button>
                         </div>
                     </div>
@@ -1692,6 +1700,11 @@ else:
             <!-- Tab 3: Raw Bounding Box -->
             <div class="tab-panel" id="panelRaw" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
                 <textarea class="code-area" id="rawText" readonly style="flex:1; height:100%;" placeholder="Kết quả OCR gốc chứa các thẻ tọa độ <|det|>..."></textarea>
+            </div>
+
+            <!-- Tab 4: Raw JSON Data -->
+            <div class="tab-panel" id="panelJson" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
+                <textarea class="code-area" id="jsonText" readonly style="flex:1; height:100%;" placeholder="Cấu trúc dữ liệu JSON chi tiết (chứa tọa độ bbox, trang, kích thước & văn bản) sẽ hiển thị ở đây..."></textarea>
             </div>
         </div>
     </main>
@@ -1750,23 +1763,18 @@ else:
             const p1 = document.getElementById('panelPreview');
             const p2 = document.getElementById('panelClean');
             const p3 = document.getElementById('panelRaw');
+            const p4 = document.getElementById('panelJson');
 
             document.getElementById('tabBtnPreview').classList.toggle('active', tab === 'preview');
             document.getElementById('tabBtnClean').classList.toggle('active', tab === 'clean');
             document.getElementById('tabBtnRaw').classList.toggle('active', tab === 'raw');
+            const tbJson = document.getElementById('tabBtnJson');
+            if (tbJson) tbJson.classList.toggle('active', tab === 'json');
 
-            if (p1) {
-                p1.classList.toggle('active', tab === 'preview');
-                p1.style.display = (tab === 'preview') ? 'flex' : 'none';
-            }
-            if (p2) {
-                p2.classList.toggle('active', tab === 'clean');
-                p2.style.display = (tab === 'clean') ? 'flex' : 'none';
-            }
-            if (p3) {
-                p3.classList.toggle('active', tab === 'raw');
-                p3.style.display = (tab === 'raw') ? 'flex' : 'none';
-            }
+            if (p1) { p1.classList.toggle('active', tab === 'preview'); p1.style.display = (tab === 'preview') ? 'flex' : 'none'; }
+            if (p2) { p2.classList.toggle('active', tab === 'clean'); p2.style.display = (tab === 'clean') ? 'flex' : 'none'; }
+            if (p3) { p3.classList.toggle('active', tab === 'raw'); p3.style.display = (tab === 'raw') ? 'flex' : 'none'; }
+            if (p4) { p4.classList.toggle('active', tab === 'json'); p4.style.display = (tab === 'json') ? 'flex' : 'none'; }
         }
 
         window.currentCleanMarkdown = "";
@@ -1801,6 +1809,18 @@ else:
 
                 document.getElementById('cleanText').value = data.markdown_text;
                 document.getElementById('rawText').value = data.raw_text;
+
+                const importedJSON = {
+                    status: "imported",
+                    filename: data.filename,
+                    markdown_text: data.markdown_text,
+                    raw_text: data.raw_text,
+                    timestamp: new Date().toISOString()
+                };
+                window.currentJSONData = importedJSON;
+                const jsonTextArea = document.getElementById('jsonText');
+                if (jsonTextArea) jsonTextArea.value = JSON.stringify(importedJSON, null, 2);
+
                 document.getElementById('previewArea').innerHTML = `
                     <div class="stitch-card" style="animation:none;">
                         <div class="page-break-divider">📄 TỆP IMPORT: ${data.filename}</div>
@@ -1837,6 +1857,30 @@ else:
             else if (format === 'pdf') downloadPDF();
             else if (format === 'md') downloadMD();
             else if (format === 'txt') downloadTXT();
+            else if (format === 'json') downloadJSON();
+        }
+
+        function downloadJSON() {
+            let content = document.getElementById('jsonText') ? document.getElementById('jsonText').value : '';
+            if (!content || !content.trim()) {
+                if (window.currentJSONData) {
+                    content = JSON.stringify(window.currentJSONData, null, 2);
+                }
+            }
+            if (!content || !content.trim()) {
+                alert("Chưa có dữ liệu JSON để tải về!");
+                return;
+            }
+            const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "ocr_result";
+            const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = baseName + ".json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
         }
 
         async function downloadDOCX() {
@@ -1951,13 +1995,16 @@ else:
             const previewPanel = document.getElementById('panelPreview');
             const cleanPanel = document.getElementById('panelClean');
             const rawPanel = document.getElementById('panelRaw');
+            const jsonPanel = document.getElementById('panelJson');
 
-            if (previewPanel.classList.contains('active')) {
+            if (previewPanel && previewPanel.classList.contains('active')) {
                 textToCopy = window.currentCleanMarkdown || document.getElementById('previewArea').innerText;
-            } else if (cleanPanel.classList.contains('active')) {
+            } else if (cleanPanel && cleanPanel.classList.contains('active')) {
                 textToCopy = document.getElementById('cleanText').value;
-            } else if (rawPanel.classList.contains('active')) {
+            } else if (rawPanel && rawPanel.classList.contains('active')) {
                 textToCopy = document.getElementById('rawText').value;
+            } else if (jsonPanel && jsonPanel.classList.contains('active')) {
+                textToCopy = document.getElementById('jsonText').value;
             }
 
             if (!textToCopy || !textToCopy.trim() || textToCopy.includes("Tài liệu đã được trích xuất")) {
@@ -2018,11 +2065,15 @@ else:
             const previewArea = document.getElementById('previewArea');
             const cleanTextArea = document.getElementById('cleanText');
             const rawTextArea = document.getElementById('rawText');
+            const jsonTextArea = document.getElementById('jsonText');
 
             window.currentCleanMarkdown = '';
+            window.currentOCRDataPages = [];
+            window.currentJSONData = null;
             previewArea.innerHTML = '';
             cleanTextArea.value = '';
             rawTextArea.value = '';
+            if (jsonTextArea) jsonTextArea.value = '';
 
             try {
                 const response = await fetch(`/v1/ocr/stream?mode=${currentMode}`, {
@@ -2062,10 +2113,23 @@ else:
 
                         if (eventName === 'page_data' && dataStr) {
                             const pageObj = JSON.parse(dataStr);
+                            window.currentOCRDataPages.push(pageObj);
                             appendPageStitchUI(pageObj);
                         } else if (eventName === 'complete') {
                             const totalSec = stopTimer();
                             if (statusMsg) statusMsg.innerText = `Hoàn tất trong ${totalSec}s`;
+                            
+                            const fullJSON = {
+                                status: "success",
+                                filename: currentFile ? currentFile.name : "ocr_result",
+                                mode: currentMode,
+                                total_pages: window.currentOCRDataPages.length,
+                                execution_time_seconds: parseFloat(totalSec),
+                                timestamp: new Date().toISOString(),
+                                pages: window.currentOCRDataPages
+                            };
+                            window.currentJSONData = fullJSON;
+                            if (jsonTextArea) jsonTextArea.value = JSON.stringify(fullJSON, null, 2);
                         }
                     }
                 }
