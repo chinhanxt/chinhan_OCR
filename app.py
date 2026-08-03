@@ -1586,16 +1586,18 @@ else:
 
             <!-- Tab 1: Render View -->
             <div class="tab-panel active" id="panelPreview" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-                <div class="preview-box" id="previewArea" style="flex:1; max-height:none; display:flex; align-items:center; justify-content:center;">
-                    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
-                        <div style="font-weight:600; font-size:14px; color:#64748b;">Chưa có dữ liệu trích xuất</div>
-                        <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Chọn tệp Ảnh hoặc PDF và bấm "Chạy" để bắt đầu nhận dạng tài liệu.</div>
+                <div class="preview-box" id="previewArea" style="flex:1; max-height:none; width:100%; overflow-y:auto;">
+                    <div id="emptyState" style="height:100%; min-height:300px; display:flex; align-items:center; justify-content:center;">
+                        <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            <div style="font-weight:600; font-size:14px; color:#64748b;">Chưa có dữ liệu trích xuất</div>
+                            <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Chọn tệp Ảnh hoặc PDF và bấm "Chạy" để bắt đầu nhận dạng tài liệu.</div>
+                        </div>
                     </div>
                 </div>
             </div>
