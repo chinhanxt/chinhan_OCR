@@ -805,13 +805,15 @@ else:
             color: var(--text-main);
             font-weight: 600;
             font-size: 12px;
-            padding: 6px 14px;
+            padding: 6px 12px;
             border-radius: 7px;
             cursor: pointer;
             transition: all 0.15s ease;
             display: flex;
             align-items: center;
             gap: 6px;
+            max-width: 180px;
+            white-space: nowrap;
         }
 
         .btn-file-select:hover {
@@ -819,17 +821,12 @@ else:
             border-color: #cbd5e1;
         }
 
-        .file-info-badge {
-            font-size: 11.5px;
-            font-weight: 500;
-            color: var(--text-sub);
-            background: #f1f5f9;
-            padding: 5px 10px;
-            border-radius: 6px;
-            max-width: 220px;
+        #fileBtnText {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            max-width: 140px;
+            display: inline-block;
         }
 
         .btn-action-compact {
@@ -1592,11 +1589,10 @@ else:
             <!-- File Upload & Run Action -->
             <div style="display:flex; align-items:center; gap:8px;">
                 <input type="file" id="fileInput" class="file-input-hidden" accept="image/*,application/pdf,.pdf,.PDF" onchange="handleFileSelect(event)">
-                <button class="btn-file-select" onclick="triggerFileInput()">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Chọn tệp
+                <button class="btn-file-select" onclick="triggerFileInput()" id="selectFileBtn" title="Chọn tệp Ảnh hoặc PDF">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="13" x2="12" y2="15"/></svg>
+                    <span id="fileBtnText">Chọn tệp</span>
                 </button>
-                <div class="file-info-badge" id="dropText">Chưa chọn tệp...</div>
 
                 <button class="btn-action-compact" id="submitBtn" onclick="executeOCR()">
                     <div class="spinner" id="btnSpinner"></div>
@@ -1743,9 +1739,12 @@ else:
 
         function setFile(file) {
             currentFile = file;
-            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            const icon = file.type.includes('pdf') || file.name.endsWith('.pdf') ? '📄' : '🖼️';
-            document.getElementById('dropText').innerText = `${icon} ${file.name} (${sizeMB} MB)`;
+            const fileBtnText = document.getElementById('fileBtnText');
+            const selectFileBtn = document.getElementById('selectFileBtn');
+            if (fileBtnText && file) {
+                fileBtnText.innerText = file.name;
+                if (selectFileBtn) selectFileBtn.title = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+            }
         }
 
         function switchOutputTab(tab) {
