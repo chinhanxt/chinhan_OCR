@@ -1568,72 +1568,65 @@ else:
 </head>
 <body>
     <main>
-        <!-- Top Compact Control Toolbar (Notion Style) -->
+        <!-- 1 Single Unified Compact Toolbar (Notion Style) -->
         <div class="top-control-bar">
-            <div class="brand-compact">
-                <span class="brand-dot"></span>
-                <span>chinhan_OCR</span>
-            </div>
+            <!-- Brand & Modes -->
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="brand-compact">
+                    <span class="brand-dot"></span>
+                    <span>chinhan_OCR</span>
+                </div>
 
-            <div class="ctrl-group">
                 <div class="mode-pills">
                     <button class="mode-pill active" id="modeGundam" onclick="selectMode('gundam')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
                         Gundam (Chi tiết)
                     </button>
                     <button class="mode-pill" id="modeBase" onclick="selectMode('base')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         Base (Nhanh)
                     </button>
                 </div>
             </div>
 
-            <div class="ctrl-group">
+            <!-- File Upload & Run Action -->
+            <div style="display:flex; align-items:center; gap:8px;">
                 <input type="file" id="fileInput" class="file-input-hidden" accept="image/*,application/pdf,.pdf,.PDF" onchange="handleFileSelect(event)">
                 <button class="btn-file-select" onclick="triggerFileInput()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     Chọn tệp
                 </button>
                 <div class="file-info-badge" id="dropText">Chưa chọn tệp...</div>
-            </div>
 
-            <div class="ctrl-group">
                 <button class="btn-action-compact" id="submitBtn" onclick="executeOCR()">
                     <div class="spinner" id="btnSpinner"></div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     <span id="btnText">Chạy</span>
                 </button>
                 <div class="timer-badge-compact" id="liveTimer">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     <span>00:00.0s</span>
                 </div>
+                <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
             </div>
-            <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
-        </div>
 
-        <!-- Full Width Main Output Panel -->
-        <div class="panel-card" style="height: calc(100vh - 120px); min-height: 600px;">
-            <div class="panel-card-header" style="flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:10px;">
-                <div style="display:flex; align-items:center; gap:14px;">
-                    <span style="font-size:15px; font-weight:700; color:#0f172a;">Kết quả trích xuất</span>
-                    <!-- 3tab Navigation Inline -->
-                    <div class="output-tabs-inline">
-                        <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            Design
-                        </button>
-                        <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                            Markdown
-                        </button>
-                        <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                            Raw
-                        </button>
-                    </div>
+            <!-- Output Tabs & Export/Import -->
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div class="output-tabs-inline">
+                    <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        Design
+                    </button>
+                    <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Markdown
+                    </button>
+                    <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        Raw
+                    </button>
                 </div>
 
-                <!-- Export & Import Actions Inline -->
                 <div class="export-actions-inline">
                     <input type="file" id="importFileInput" class="file-input-hidden" accept=".docx,.pdf,.txt,.md" onchange="handleImportFileSelect(event)">
                     <button class="btn-exp-sm" style="background:#ffffff; color:#374151; border-color:#d1d5db;" onclick="triggerImportFileInput()" title="Import tệp Word/PDF/TXT/MD">
@@ -1671,7 +1664,10 @@ else:
                     <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">Copy</button>
                 </div>
             </div>
+        </div>
 
+        <!-- Full Width Main Output Panel -->
+        <div class="panel-card" style="height: calc(100vh - 65px); min-height: 650px;">
             <!-- Sticky Page Nav Bar for PDF Multi-page -->
             <div class="page-nav-bar" id="pageNavBar"></div>
 
