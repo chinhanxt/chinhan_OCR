@@ -1274,6 +1274,74 @@ else:
             box-shadow: 0 3px 8px rgba(0,0,0,0.08);
         }
 
+        /* DROPDOWN EXPORT MENU */
+        .dropdown-export {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn-exp-main {
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+            white-space: nowrap;
+        }
+
+        .btn-exp-main:hover {
+            background: #059669;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .dropdown-menu-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.04);
+            min-width: 160px;
+            z-index: 100;
+            padding: 4px;
+        }
+
+        .dropdown-menu-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s ease;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
         .export-bar {
             display: flex;
             align-items: center;
@@ -1572,11 +1640,34 @@ else:
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Import
                     </button>
-                    <span style="font-size:11px; font-weight:700; color:var(--text-sub); margin-left:4px;">Tải về:</span>
-                    <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">Word (.docx)</button>
-                    <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">PDF (.pdf)</button>
-                    <button class="btn-exp-sm btn-exp-md" onclick="downloadMD()" style="background:#ffffff; color:#047857; border-color:#a7f3d0;">Markdown (.md)</button>
-                    <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">TXT (.txt)</button>
+                    
+                    <!-- Unified Export Dropdown Menu -->
+                    <div class="dropdown-export" id="exportDropdown">
+                        <button class="btn-exp-main" onclick="toggleExportMenu(event)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Xuất file</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <div class="dropdown-menu-content" id="exportMenuContent">
+                            <button class="dropdown-item" onclick="triggerExport('docx')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                Word (.docx)
+                            </button>
+                            <button class="dropdown-item" onclick="triggerExport('pdf')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h3a1.5 1.5 0 0 0 0-3H9v6"/></svg>
+                                PDF (.pdf)
+                            </button>
+                            <button class="dropdown-item" onclick="triggerExport('md')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 12 12 15 15"/></svg>
+                                Markdown (.md)
+                            </button>
+                            <button class="dropdown-item" onclick="triggerExport('txt')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                                Text (.txt)
+                            </button>
+                        </div>
+                    </div>
+
                     <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">Copy</button>
                 </div>
             </div>
@@ -1722,13 +1813,36 @@ else:
                         <div class="stitch-content">${marked.parse(data.markdown_text)}</div>
                     </div>
                 `;
-                statusMsg.innerText = `✨ Đã import thành công ${data.filename} vào Màn 2!`;
             } catch (err) {
                 alert("Lỗi kết nối import: " + err.message);
                 statusMsg.innerText = "❌ Lỗi import tệp.";
             } finally {
                 e.target.value = '';
             }
+        }
+
+        function toggleExportMenu(e) {
+            if (e) e.stopPropagation();
+            const menu = document.getElementById('exportMenuContent');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('exportDropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                const menu = document.getElementById('exportMenuContent');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+
+        function triggerExport(format) {
+            const menu = document.getElementById('exportMenuContent');
+            if (menu) menu.classList.remove('show');
+
+            if (format === 'docx') downloadDOCX();
+            else if (format === 'pdf') downloadPDF();
+            else if (format === 'md') downloadMD();
+            else if (format === 'txt') downloadTXT();
         }
 
         async function downloadDOCX() {
