@@ -21,15 +21,15 @@
 
 <div align="center">
 
-### 🎨 Giao Diện Notion Minimalist Studio UI
+### 📄 1. Tài Liệu Scan Gốc (Input Document)
 ![Demo UI Showcase 1](assets/demo/demo_ui_full.png)
-*Giao diện Notion Trắng & Xanh Emerald tối giản với 1 thanh duy nhất, hỗ trợ 4 Tab hiển thị kết quả và bộ đếm thời gian thực*
+*Bản scan văn bản & bảng biểu hành chính chứa chữ viết tay và nét mờ*
 
 <br/>
 
-### 📊 Xem Cấu Trúc JSON & Bộ Xuất 5 Định Dạng File
+### ⚡ 2. Kết Quả Bóc Tách trên Web Studio UI (OCR Output)
 ![Demo UI Showcase 2](assets/demo/demo_json_export.png)
-*Tab JSON chi tiết chứa đầy đủ tọa độ Bounding Box, kích thước trang, thời gian xử lý và menu Xuất File (Word, PDF, MD, TXT, JSON)*
+*Giao diện Web Studio: Trích xuất cấu trúc bảng biểu, font chữ và số liệu thời gian thực (`TRANG 3 / 16`)*
 
 </div>
 
