@@ -6,8 +6,9 @@ import logging
 import traceback
 import shutil
 import json
-import re
 import sys
+import types
+sys.modules['torchvision._meta_registrations'] = types.ModuleType('torchvision._meta_registrations')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.core.corrector import correct_vietnamese_text
 try:
@@ -37,7 +38,6 @@ except ImportError:
     File = UploadFile = Query = HTTPException = DummyFunc
     JSONResponse = HTMLResponse = StreamingResponse = CORSMiddleware = None
 
-import json
 try:
     import torch
 except ImportError:
