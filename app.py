@@ -5,6 +5,10 @@ import tempfile
 import logging
 import traceback
 import shutil
+import json
+import re
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.core.corrector import correct_vietnamese_text
 try:
     import fitz
@@ -99,21 +103,22 @@ def get_model():
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
         logger.info("Tokenizer loaded successfully.")
         
-        # Try loading via Unsloth if possible
-        try:
-            from unsloth import FastVisionModel
-            logger.info("Attempting loading via Unsloth FastVisionModel...")
-            model, tokenizer = FastVisionModel.from_pretrained(
-                MODEL_NAME,
-                load_in_4bit=True,
-                trust_remote_code=True,
-            )
-            FastVisionModel.for_inference(model)
-            load_status = {"status": "ready", "backend": "Unsloth 4-bit", "error": None}
-            logger.info("Successfully initialized model using Unsloth 4-bit acceleration!")
-            return model, tokenizer
-        except Exception as unsloth_err:
-            logger.warning(f"Unsloth initialization skipped/failed ({unsloth_err}). Falling back to standard PyTorch Transformers...")
+        # Try loading via Unsloth if explicitly enabled
+        if os.getenv("ENABLE_UNSLOTH", "0") == "1":
+            try:
+                from unsloth import FastVisionModel
+                logger.info("Attempting loading via Unsloth FastVisionModel...")
+                model, tokenizer = FastVisionModel.from_pretrained(
+                    MODEL_NAME,
+                    load_in_4bit=True,
+                    trust_remote_code=True,
+                )
+                FastVisionModel.for_inference(model)
+                load_status = {"status": "ready", "backend": "Unsloth 4-bit", "error": None}
+                logger.info("Successfully initialized model using Unsloth 4-bit acceleration!")
+                return model, tokenizer
+            except Exception as unsloth_err:
+                logger.warning(f"Unsloth initialization skipped/failed ({unsloth_err}). Falling back to standard PyTorch Transformers...")
 
         # Fallback to PyTorch AutoModel
         model = AutoModel.from_pretrained(
