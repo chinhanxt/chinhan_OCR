@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.superpowers/
+scratch/
+.tempmediaStorage/
+.DS_Store
+*.tmp
+ocr_output_*
+pdf_ocr_*
+EOF

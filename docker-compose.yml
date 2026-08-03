@@ -1,0 +1,25 @@
+services:
+  unlimited-ocr-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unlimited_ocr_unsloth_container
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    ports:
+      - "3000:8000"
+    environment:
+      - MODEL_NAME=baidu/Unlimited-OCR
+      - CUDA_VISIBLE_DEVICES=0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./app.py:/workspace/app.py
+      - ~/.cache/huggingface:/root/.cache/huggingface
