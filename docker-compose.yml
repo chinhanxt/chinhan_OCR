@@ -13,6 +13,8 @@ services:
     environment:
       - MODEL_NAME=baidu/Unlimited-OCR
       - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/workspace
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
     deploy:
       resources:
         reservations:
@@ -22,4 +24,5 @@ services:
               capabilities: [gpu]
     volumes:
       - ./app.py:/workspace/app.py
+      - ./src:/workspace/src
       - ~/.cache/huggingface:/root/.cache/huggingface

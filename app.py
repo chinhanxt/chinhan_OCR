@@ -183,6 +183,10 @@ def render_single_page(pdf_path: str, page_num: int, dpi: int = 220) -> tuple:
 
 def run_ocr_on_single_image(tmp_img_path, mode, max_length, active_model, active_tokenizer):
     output_dir = tempfile.mkdtemp(prefix="ocr_output_")
+    import gc
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     try:
         crop_mode = True if mode == "gundam" else False
         image_size = 640 if mode == "gundam" else 1024
@@ -219,7 +223,11 @@ def run_ocr_on_single_image(tmp_img_path, mode, max_length, active_model, active
                         ocr_text = f.read()
         return ocr_text.strip()
     finally:
-        shutil.rmtree(output_dir, ignore_errors=True)
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir, ignore_errors=True)
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 def format_table_line(text: str) -> str:
     import re
