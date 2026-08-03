@@ -1177,6 +1177,61 @@ else:
             background-color: #eff6ff;
         }
 
+        .output-tabs-inline {
+            display: flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+            gap: 3px;
+        }
+
+        .tab-btn-sm {
+            background: transparent;
+            border: none;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn-sm.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        }
+
+        .export-actions-inline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-exp-sm {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        .btn-exp-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        }
+
         .export-bar {
             display: flex;
             align-items: center;
@@ -1464,27 +1519,25 @@ else:
 
             <!-- Right Panel: 3Tab OCR Output Viewer -->
             <div class="panel-card">
-                <div class="panel-card-header">
-                    <span>📝 MÀN 2: KẾT QUẢ TRÍCH XUẤT (3TAB)</span>
-                    <span style="font-size:12px; font-weight:600; color:#64748b;">🔄 Cuộn Tự Đồng Bộ</span>
-                </div>
-
-                <!-- Top Export & Download Toolbar -->
-                <div class="export-bar">
-                    <div class="export-label">📥 TẢI VỀ:</div>
-                    <div class="export-actions">
-                        <button class="btn-exp btn-exp-docx" onclick="downloadDOCX()">📄 Tải Word (.docx)</button>
-                        <button class="btn-exp btn-exp-pdf" onclick="downloadPDF()">📕 Tải PDF (.pdf)</button>
-                        <button class="btn-exp btn-exp-txt" onclick="downloadTXT()">💾 Tải TXT (.txt)</button>
-                        <button class="btn-exp btn-exp-copy" onclick="copyCurrentTabContent()">📋 Sao Chép</button>
+                <div class="panel-card-header" style="flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:8px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span>📝 MÀN 2: KẾT QUẢ TRÍCH XUẤT</span>
+                        <!-- 3tab Navigation Inline -->
+                        <div class="output-tabs-inline">
+                            <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ 1. BLUEPRINT DESIGN</button>
+                            <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">📄 2. MARKDOWN SẠCH</button>
+                            <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 3. RAW</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 3tab Navigation -->
-                <div class="output-tabs">
-                    <button class="tab-btn active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ 1. BLUEPRINT DESIGN</button>
-                    <button class="tab-btn" id="tabBtnClean" onclick="switchOutputTab('clean')">📄 2. MARKDOWN SẠCH</button>
-                    <button class="tab-btn" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 3. DỮ LIỆU THÔ (RAW)</button>
+                    <!-- Export Actions Inline -->
+                    <div class="export-actions-inline">
+                        <span style="font-size:11px; font-weight:800; color:var(--text-sub);">📥 TẢI VỀ:</span>
+                        <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">📄 Word</button>
+                        <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">📕 PDF</button>
+                        <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">💾 TXT</button>
+                        <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">📋 Copy</button>
+                    </div>
                 </div>
 
                 <!-- Sticky Page Nav Bar for PDF Multi-page -->
