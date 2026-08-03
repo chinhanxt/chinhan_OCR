@@ -1593,69 +1593,47 @@ else:
             <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
         </div>
 
-        <!-- 1VS1 Resizable Split View Comparison Container -->
-        <div class="comparison-container" id="comparisonContainer">
-            <!-- Left Panel: Original File Viewer -->
-            <div class="panel-card" id="leftPanel" style="width: 48%; min-width: 200px;">
-                <div class="panel-card-header">
-                    <span>📷 MÀN 1: MÀN HÌNH TỆP GỐC (PREVIEW)</span>
-                </div>
-                <div class="original-viewer-box" id="originalViewer">
-                    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
-                        <div style="font-size:40px; margin-bottom:12px;">📂</div>
-                        <div style="font-weight:700; font-size:15px; color:#64748b;">Vui lòng chọn tệp Ảnh hoặc PDF ở trên</div>
-                        <div style="font-size:13px; margin-top:6px;">Tài liệu gốc sẽ được hiển thị xem trước tại màn hình này.</div>
+        <!-- Full Width Main Output Panel -->
+        <div class="panel-card" style="height: calc(100vh - 180px); min-height: 560px;">
+            <div class="panel-card-header" style="flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <span style="font-size:16px;">📝 KẾT QUẢ TRÍCH XUẤT</span>
+                    <!-- 3tab Navigation Inline -->
+                    <div class="output-tabs-inline">
+                        <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ 1. BLUEPRINT DESIGN</button>
+                        <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">📄 2. MARKDOWN SẠCH</button>
+                        <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 3. RAW</button>
                     </div>
+                </div>
+
+                <!-- Export & Import Actions Inline -->
+                <div class="export-actions-inline">
+                    <input type="file" id="importFileInput" class="file-input-hidden" accept=".docx,.pdf,.txt,.md" onchange="handleImportFileSelect(event)">
+                    <button class="btn-exp-sm" style="background:#fef3c7; color:#b45309; border-color:#fde68a;" onclick="triggerImportFileInput()" title="Import tệp Word/PDF/TXT vào studio">📥 Import File</button>
+                    <span style="font-size:11px; font-weight:800; color:var(--text-sub); margin-left:4px;">📥 TẢI VỀ:</span>
+                    <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">📄 Word</button>
+                    <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">📕 PDF</button>
+                    <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">💾 TXT</button>
+                    <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">📋 Copy</button>
                 </div>
             </div>
 
-            <!-- Resizer Gutter Bar -->
-            <div class="resizer-gutter" id="resizerGutter" title="Kéo để thay đổi kích thước 2 màn hình">
-                <div class="gutter-handle"></div>
+            <!-- Sticky Page Nav Bar for PDF Multi-page -->
+            <div class="page-nav-bar" id="pageNavBar"></div>
+
+            <!-- Tab 1: Render View -->
+            <div class="tab-panel active" id="panelPreview" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="preview-box" id="previewArea" style="flex:1; max-height:none;">Tài liệu đã được trích xuất và định dạng trình bày Y Chang Ảnh sẽ hiển thị ở đây...</div>
             </div>
 
-            <!-- Right Panel: 3Tab OCR Output Viewer -->
-            <div class="panel-card" id="rightPanel" style="flex: 1; min-width: 250px;">
-                <div class="panel-card-header" style="flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:8px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span>📝 MÀN 2: KẾT QUẢ TRÍCH XUẤT</span>
-                        <!-- 3tab Navigation Inline -->
-                        <div class="output-tabs-inline">
-                            <button class="tab-btn-sm active" id="tabBtnPreview" onclick="switchOutputTab('preview')">✨ 1. BLUEPRINT DESIGN</button>
-                            <button class="tab-btn-sm" id="tabBtnClean" onclick="switchOutputTab('clean')">📄 2. MARKDOWN SẠCH</button>
-                            <button class="tab-btn-sm" id="tabBtnRaw" onclick="switchOutputTab('raw')">🔍 3. RAW</button>
-                        </div>
-                    </div>
+            <!-- Tab 2: Clean Markdown -->
+            <div class="tab-panel" id="panelClean" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
+                <textarea class="code-area" id="cleanText" readonly style="flex:1; height:100%;" placeholder="Kết quả Markdown sạch (dùng để dán vào Word/Notion) sẽ hiển thị ở đây..."></textarea>
+            </div>
 
-                    <!-- Export & Import Actions Inline -->
-                    <div class="export-actions-inline">
-                        <input type="file" id="importFileInput" class="file-input-hidden" accept=".docx,.pdf,.txt,.md" onchange="handleImportFileSelect(event)">
-                        <button class="btn-exp-sm" style="background:#fef3c7; color:#b45309; border-color:#fde68a;" onclick="triggerImportFileInput()" title="Import tệp Word/PDF/TXT vào màn 2 để đem lên so sánh 1vs1">📥 Import Màn Phải</button>
-                        <span style="font-size:11px; font-weight:800; color:var(--text-sub); margin-left:4px;">📥 TẢI VỀ:</span>
-                        <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">📄 Word</button>
-                        <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">📕 PDF</button>
-                        <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">💾 TXT</button>
-                        <button class="btn-exp-sm btn-exp-copy" onclick="copyCurrentTabContent()">📋 Copy</button>
-                    </div>
-                </div>
-
-                <!-- Sticky Page Nav Bar for PDF Multi-page -->
-                <div class="page-nav-bar" id="pageNavBar"></div>
-
-                <!-- Tab 1: Render View -->
-                <div class="tab-panel active" id="panelPreview" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-                    <div class="preview-box" id="previewArea" style="flex:1; max-height:none;">Tài liệu đã được trích xuất và định dạng trình bày Y Chang Ảnh sẽ hiển thị ở đây...</div>
-                </div>
-
-                <!-- Tab 2: Clean Markdown -->
-                <div class="tab-panel" id="panelClean" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
-                    <textarea class="code-area" id="cleanText" readonly style="flex:1; height:100%;" placeholder="Kết quả Markdown sạch (dùng để dán vào Word/Notion) sẽ hiển thị ở đây..."></textarea>
-                </div>
-
-                <!-- Tab 3: Raw Bounding Box -->
-                <div class="tab-panel" id="panelRaw" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
-                    <textarea class="code-area" id="rawText" readonly style="flex:1; height:100%;" placeholder="Kết quả OCR gốc chứa các thẻ tọa độ <|det|>..."></textarea>
-                </div>
+            <!-- Tab 3: Raw Bounding Box -->
+            <div class="tab-panel" id="panelRaw" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
+                <textarea class="code-area" id="rawText" readonly style="flex:1; height:100%;" placeholder="Kết quả OCR gốc chứa các thẻ tọa độ <|det|>..."></textarea>
             </div>
         </div>
     </main>
@@ -1705,173 +1683,7 @@ else:
             const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
             const icon = file.type.includes('pdf') || file.name.endsWith('.pdf') ? '📄' : '🖼️';
             document.getElementById('dropText').innerText = `${icon} ${file.name} (${sizeMB} MB)`;
-            renderOriginalViewer(file);
         }
-
-        async function renderOriginalViewer(file) {
-            const viewer = document.getElementById('originalViewer');
-            if (!viewer) return;
-
-            const isPdf = file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf');
-            if (isPdf && typeof pdfjsLib !== 'undefined') {
-                viewer.innerHTML = '<div style="text-align:center; padding:40px 20px; color:#64748b; font-weight:600;">⏳ Đang render toàn bộ trang PDF gốc...</div>';
-                try {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    viewer.innerHTML = '';
-                    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-                        const page = await pdfDoc.getPage(pageNum);
-                        const viewport = page.getViewport({ scale: 1.4 });
-
-                        const pageCard = document.createElement('div');
-                        pageCard.className = 'pdf-page-wrapper';
-                        pageCard.id = `left-page-${pageNum}`;
-                        pageCard.setAttribute('data-page', pageNum);
-                        pageCard.style.marginBottom = '18px';
-                        pageCard.style.borderRadius = '10px';
-                        pageCard.style.overflow = 'hidden';
-                        pageCard.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)';
-                        pageCard.style.background = '#ffffff';
-
-                        const pageHeader = document.createElement('div');
-                        pageHeader.style.background = '#f1f5f9';
-                        pageHeader.style.padding = '6px 14px';
-                        pageHeader.style.fontSize = '12px';
-                        pageHeader.style.fontWeight = '700';
-                        pageHeader.style.color = '#334155';
-                        pageHeader.innerText = `📄 TRANG GỐC ${pageNum} / ${pdfDoc.numPages}`;
-
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        canvas.style.width = '100%';
-                        canvas.style.height = 'auto';
-                        canvas.style.display = 'block';
-
-                        await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-                        pageCard.appendChild(pageHeader);
-                        pageCard.appendChild(canvas);
-                        viewer.appendChild(pageCard);
-                    }
-                } catch (err) {
-                    viewer.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444;">❌ Không thể render PDF: ${err.message}</div>`;
-                }
-            } else {
-                const url = URL.createObjectURL(file);
-                viewer.innerHTML = `
-                    <div style="text-align:center; margin-bottom:12px; font-weight:700; font-size:12px; color:#334155; background:#f1f5f9; padding:6px 12px; border-radius:6px;">
-                        🖼️ ẢNH GỐC TẢI LÊN (${file.name})
-                    </div>
-                    <img src="${url}" style="width:100%; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);" alt="Original Image">
-                `;
-            }
-        }
-
-        let activeScrollSource = null;
-        let scrollTimer = null;
-
-        function initSyncScroll() {
-            const leftBox = document.getElementById('originalViewer');
-            if (!leftBox) return;
-
-            function syncScroll(source) {
-                if (activeScrollSource && activeScrollSource !== source) return;
-                activeScrollSource = source;
-
-                const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
-                const activeRight = getActiveRightBox();
-                if (!activeRight) {
-                    activeScrollSource = null;
-                    return;
-                }
-                const rightMax = activeRight.scrollHeight - activeRight.clientHeight;
-
-                if (source === 'left') {
-                    if (leftMax > 0 && rightMax > 0) {
-                        const ratio = leftBox.scrollTop / leftMax;
-                        activeRight.scrollTop = ratio * rightMax;
-                    }
-                } else if (source === 'right') {
-                    if (leftMax > 0 && rightMax > 0) {
-                        const ratio = activeRight.scrollTop / rightMax;
-                        leftBox.scrollTop = ratio * leftMax;
-                    }
-                }
-
-                clearTimeout(scrollTimer);
-                scrollTimer = setTimeout(() => {
-                    activeScrollSource = null;
-                }, 40);
-            }
-
-            leftBox.addEventListener('scroll', () => {
-                requestAnimationFrame(() => syncScroll('left'));
-            }, { passive: true });
-
-            ['previewArea', 'cleanText', 'rawText'].forEach(id => {
-                const rightBox = document.getElementById(id);
-                if (rightBox) {
-                    rightBox.addEventListener('scroll', () => {
-                        requestAnimationFrame(() => syncScroll('right'));
-                    }, { passive: true });
-                }
-            });
-        }
-
-        function getActiveRightBox() {
-            const p1 = document.getElementById('panelPreview');
-            const p2 = document.getElementById('panelClean');
-            const p3 = document.getElementById('panelRaw');
-            if (p1 && p1.classList.contains('active')) return document.getElementById('previewArea');
-            if (p2 && p2.classList.contains('active')) return document.getElementById('cleanText');
-            if (p3 && p3.classList.contains('active')) return document.getElementById('rawText');
-            return null;
-        }
-
-        function initResizer() {
-            const container = document.getElementById('comparisonContainer');
-            const leftPanel = document.getElementById('leftPanel');
-            const resizer = document.getElementById('resizerGutter');
-            if (!container || !leftPanel || !resizer) return;
-
-            let isDragging = false;
-
-            resizer.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                resizer.classList.add('dragging');
-                document.body.style.cursor = 'col-resize';
-                document.body.style.userSelect = 'none';
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                const containerRect = container.getBoundingClientRect();
-                const pointerX = e.clientX - containerRect.left;
-                const totalWidth = containerRect.width;
-
-                let pct = (pointerX / totalWidth) * 100;
-                if (pct < 15) pct = 15;
-                if (pct > 85) pct = 85;
-
-                leftPanel.style.width = pct + '%';
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    resizer.classList.remove('dragging');
-                    document.body.style.cursor = 'default';
-                    document.body.style.userSelect = 'auto';
-                }
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initSyncScroll();
-            initResizer();
-        });
 
         function switchOutputTab(tab) {
             const p1 = document.getElementById('panelPreview');
