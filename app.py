@@ -911,18 +911,46 @@ else:
             box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
         }
 
-        /* 1VS1 COMPARISON GRID */
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+        /* 1VS1 RESIZABLE COMPARISON CONTAINER */
+        .comparison-container {
+            display: flex;
             align-items: stretch;
+            gap: 0;
+            height: calc(100vh - 180px);
+            min-height: 560px;
+            position: relative;
+            width: 100%;
         }
 
-        @media (max-width: 1024px) {
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
+        .resizer-gutter {
+            width: 14px;
+            margin: 0 4px;
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            z-index: 10;
+            transition: background 0.2s ease;
+            border-radius: 6px;
+        }
+
+        .resizer-gutter:hover, .resizer-gutter.dragging {
+            background: rgba(37, 99, 235, 0.12);
+        }
+
+        .gutter-handle {
+            width: 4px;
+            height: 38px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .resizer-gutter:hover .gutter-handle, .resizer-gutter.dragging .gutter-handle {
+            background: #2563eb;
+            height: 52px;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
         }
 
         .panel-card {
@@ -933,8 +961,7 @@ else:
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 180px);
-            min-height: 560px;
+            height: 100%;
         }
 
         .panel-card-header {
@@ -1558,10 +1585,10 @@ else:
             <div class="status-info" id="statusMsg" style="margin-top:0; font-size:12px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
         </div>
 
-        <!-- 1VS1 Split View Comparison Grid -->
-        <div class="comparison-grid">
+        <!-- 1VS1 Resizable Split View Comparison Container -->
+        <div class="comparison-container" id="comparisonContainer">
             <!-- Left Panel: Original File Viewer -->
-            <div class="panel-card">
+            <div class="panel-card" id="leftPanel" style="width: 48%; min-width: 200px;">
                 <div class="panel-card-header">
                     <span>📷 MÀN 1: MÀN HÌNH TỆP GỐC (PREVIEW)</span>
                 </div>
@@ -1574,8 +1601,13 @@ else:
                 </div>
             </div>
 
+            <!-- Resizer Gutter Bar -->
+            <div class="resizer-gutter" id="resizerGutter" title="Kéo để thay đổi kích thước 2 màn hình">
+                <div class="gutter-handle"></div>
+            </div>
+
             <!-- Right Panel: 3Tab OCR Output Viewer -->
-            <div class="panel-card">
+            <div class="panel-card" id="rightPanel" style="flex: 1; min-width: 250px;">
                 <div class="panel-card-header" style="flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:8px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span>📝 MÀN 2: KẾT QUẢ TRÍCH XUẤT</span>
@@ -1839,18 +1871,70 @@ else:
             return null;
         }
 
+        function initResizer() {
+            const container = document.getElementById('comparisonContainer');
+            const leftPanel = document.getElementById('leftPanel');
+            const resizer = document.getElementById('resizerGutter');
+            if (!container || !leftPanel || !resizer) return;
+
+            let isDragging = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                resizer.classList.add('dragging');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const containerRect = container.getBoundingClientRect();
+                const pointerX = e.clientX - containerRect.left;
+                const totalWidth = containerRect.width;
+
+                let pct = (pointerX / totalWidth) * 100;
+                if (pct < 15) pct = 15;
+                if (pct > 85) pct = 85;
+
+                leftPanel.style.width = pct + '%';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    resizer.classList.remove('dragging');
+                    document.body.style.cursor = 'default';
+                    document.body.style.userSelect = 'auto';
+                }
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             initSyncScroll();
+            initResizer();
         });
 
         function switchOutputTab(tab) {
+            const p1 = document.getElementById('panelPreview');
+            const p2 = document.getElementById('panelClean');
+            const p3 = document.getElementById('panelRaw');
+
             document.getElementById('tabBtnPreview').classList.toggle('active', tab === 'preview');
             document.getElementById('tabBtnClean').classList.toggle('active', tab === 'clean');
             document.getElementById('tabBtnRaw').classList.toggle('active', tab === 'raw');
 
-            document.getElementById('panelPreview').classList.toggle('active', tab === 'preview');
-            document.getElementById('panelClean').classList.toggle('active', tab === 'clean');
-            document.getElementById('panelRaw').classList.toggle('active', tab === 'raw');
+            if (p1) {
+                p1.classList.toggle('active', tab === 'preview');
+                p1.style.display = (tab === 'preview') ? 'flex' : 'none';
+            }
+            if (p2) {
+                p2.classList.toggle('active', tab === 'clean');
+                p2.style.display = (tab === 'clean') ? 'flex' : 'none';
+            }
+            if (p3) {
+                p3.classList.toggle('active', tab === 'raw');
+                p3.style.display = (tab === 'raw') ? 'flex' : 'none';
+            }
         }
 
         window.currentCleanMarkdown = "";
