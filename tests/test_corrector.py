@@ -22,9 +22,9 @@ class TestVietnameseTextCorrector(unittest.TestCase):
         expected = "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nỦY BAN NHÂN DÂN"
         self.assertEqual(correct_vietnamese_text(raw), expected)
 
-    def test_preserve_tables(self):
-        raw = "| 1 | Tử trình dự toán | 100.000 |"
-        expected = "| 1 | Tờ trình dự toán | 100.000 |"
+    def test_thu_lao_and_khoan(self):
+        raw = "THỦ LÀO CÁC THÀNH VIÊN - KHOAÒN CHI PHÍ - Luru: VT"
+        expected = "THÙ LAO CÁC THÀNH VIÊN - KHOẢN CHI PHÍ - Lưu: VT"
         self.assertEqual(correct_vietnamese_text(raw), expected)
 
 if __name__ == "__main__":

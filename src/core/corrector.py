@@ -23,6 +23,16 @@ ADMIN_CORRECTIONS = [
     (r'\bCăn cú\b', 'Căn cứ'),
     (r'\bQUYẾT ĐỊNH\b', 'QUYẾT ĐỊNH'),
     
+    # Thù lao / Khoản chi phí / Lưu
+    (r'\bTHỦ LÀO\b', 'THÙ LAO'),
+    (r'\bThủ lao\b', 'Thù lao'),
+    (r'\bthủ lao\b', 'thù lao'),
+    (r'\bKHOAÒN\b', 'KHOẢN'),
+    (r'\bKhoaòn\b', 'Khoản'),
+    (r'\bkhoaòn\b', 'khoản'),
+    (r'\bLuru:', 'Lưu:'),
+    (r'\bluru:', 'lưu:'),
+    
     # Độc lập - Tự do - Hạnh phúc formatting
     (r'\bĐỘC LẬP\s*[-–—]\s*TỰ DO\s*[-–—]\s*HẠNH PHÚC\b', 'ĐỘC LẬP - TỰ DO - HẠNH PHÚC'),
     (r'\bĐộc lập\s*[-–—]\s*Tự do\s*[-–—]\s*Hạnh phúc\b', 'Độc lập - Tự do - Hạnh phúc'),

@@ -1692,9 +1692,9 @@ else:
                 </div>
             </div>
 
-            <!-- Tab 2: Clean Markdown -->
+            <!-- Tab 2: Clean Markdown (Editable) -->
             <div class="tab-panel" id="panelClean" style="flex:1; display:none; flex-direction:column; overflow:hidden;">
-                <textarea class="code-area" id="cleanText" readonly style="flex:1; height:100%;" placeholder="Kết quả Markdown sạch (dùng để dán vào Word/Notion) sẽ hiển thị ở đây..."></textarea>
+                <textarea class="code-area" id="cleanText" style="flex:1; height:100%;" placeholder="Kết quả Markdown sạch (bạn có thể chỉnh sửa trực tiếp văn bản ở đây)..." oninput="handleCleanTextEdit(event)"></textarea>
             </div>
 
             <!-- Tab 3: Raw Bounding Box -->
@@ -1778,6 +1778,19 @@ else:
         }
 
         window.currentCleanMarkdown = "";
+
+        function handleCleanTextEdit(e) {
+            const val = e.target.value;
+            window.currentCleanMarkdown = val;
+            const previewArea = document.getElementById('previewArea');
+            if (previewArea && typeof marked !== 'undefined' && val && val.trim()) {
+                previewArea.innerHTML = `
+                    <div class="stitch-card" style="animation:none;">
+                        <div class="stitch-content">${marked.parse(val)}</div>
+                    </div>
+                `;
+            }
+        }
 
         function triggerImportFileInput() {
             const input = document.getElementById('importFileInput');
