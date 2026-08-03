@@ -13,6 +13,11 @@
 [![NVIDIA CUDA](https://img.shields.io/badge/NVIDIA-CUDA_12.1+-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://developer.nvidia.com/cuda-zone)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](LICENSE)
 
+<br/>
+<br/>
+
+![Hệ Thống Hỏi Đáp & Kiến Trúc Bộ Nhớ Tri Thức](assets/tech_architecture.png)
+
 </div>
 
 ---
