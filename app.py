@@ -531,6 +531,64 @@ if HAS_FASTAPI:
             headers={"Content-Disposition": f"attachment; filename={out_filename}"}
         )
 
+    @app.post("/v1/import/file")
+    async def import_file_endpoint(file: UploadFile = File(...)):
+        filename = file.filename or "imported_file"
+        filename_lower = filename.lower()
+        content_bytes = await file.read()
+        
+        markdown_result = ""
+        
+        if filename_lower.endswith((".txt", ".md")):
+            markdown_result = content_bytes.decode("utf-8", errors="ignore")
+        elif filename_lower.endswith(".docx"):
+            try:
+                import docx
+                doc = docx.Document(io.BytesIO(content_bytes))
+                paragraphs = []
+                for p in doc.paragraphs:
+                    if p.text.strip():
+                        if p.style.name.startswith("Heading 1"):
+                            paragraphs.append(f"# {p.text}")
+                        elif p.style.name.startswith("Heading 2"):
+                            paragraphs.append(f"## {p.text}")
+                        elif p.style.name.startswith("Heading 3"):
+                            paragraphs.append(f"### {p.text}")
+                        else:
+                            paragraphs.append(p.text)
+                for table in doc.tables:
+                    table_md = []
+                    for r_idx, row in enumerate(table.rows):
+                        row_cells = [cell.text.strip().replace("\n", " ") for cell in row.cells]
+                        table_md.append("| " + " | ".join(row_cells) + " |")
+                        if r_idx == 0:
+                            table_md.append("| " + " | ".join(["---"] * len(row_cells)) + " |")
+                    paragraphs.append("\n" + "\n".join(table_md) + "\n")
+                markdown_result = "\n\n".join(paragraphs)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Không thể đọc file Word (.docx): {str(e)}")
+        elif filename_lower.endswith(".pdf"):
+            try:
+                import fitz
+                doc = fitz.open(stream=content_bytes, filetype="pdf")
+                page_texts = []
+                for i, page in enumerate(doc):
+                    text = page.get_text("text")
+                    page_texts.append(f"### --- Trang {i+1} ---\n\n{text}")
+                markdown_result = "\n\n".join(page_texts)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Không thể đọc file PDF: {str(e)}")
+        else:
+            raise HTTPException(status_code=400, detail="Định dạng không hỗ trợ. Vui lòng nộp file .docx, .pdf, .txt hoặc .md")
+
+        clean_md = clean_ocr_to_markdown(markdown_result)
+        return {
+            "status": "success",
+            "filename": filename,
+            "markdown_text": clean_md,
+            "raw_text": markdown_result
+        }
+
 if HAS_GRADIO:
     def gradio_ocr_process(file_obj, mode_choice):
         if file_obj is None:
@@ -1506,7 +1564,6 @@ else:
             <div class="panel-card">
                 <div class="panel-card-header">
                     <span>📷 MÀN 1: MÀN HÌNH TỆP GỐC (PREVIEW)</span>
-                    <span style="font-size:12px; font-weight:600; color:#64748b;">🔄 Cuộn Tự Đồng Bộ</span>
                 </div>
                 <div class="original-viewer-box" id="originalViewer">
                     <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
@@ -1530,9 +1587,11 @@ else:
                         </div>
                     </div>
 
-                    <!-- Export Actions Inline -->
+                    <!-- Export & Import Actions Inline -->
                     <div class="export-actions-inline">
-                        <span style="font-size:11px; font-weight:800; color:var(--text-sub);">📥 TẢI VỀ:</span>
+                        <input type="file" id="importFileInput" class="file-input-hidden" accept=".docx,.pdf,.txt,.md" onchange="handleImportFileSelect(event)">
+                        <button class="btn-exp-sm" style="background:#fef3c7; color:#b45309; border-color:#fde68a;" onclick="triggerImportFileInput()" title="Import tệp Word/PDF/TXT vào màn 2 để đem lên so sánh 1vs1">📥 Import Màn Phải</button>
+                        <span style="font-size:11px; font-weight:800; color:var(--text-sub); margin-left:4px;">📥 TẢI VỀ:</span>
                         <button class="btn-exp-sm btn-exp-docx" onclick="downloadDOCX()">📄 Word</button>
                         <button class="btn-exp-sm btn-exp-pdf" onclick="downloadPDF()">📕 PDF</button>
                         <button class="btn-exp-sm btn-exp-txt" onclick="downloadTXT()">💾 TXT</button>
@@ -1625,6 +1684,9 @@ else:
                         const viewport = page.getViewport({ scale: 1.4 });
 
                         const pageCard = document.createElement('div');
+                        pageCard.className = 'pdf-page-wrapper';
+                        pageCard.id = `left-page-${pageNum}`;
+                        pageCard.setAttribute('data-page', pageNum);
                         pageCard.style.marginBottom = '18px';
                         pageCard.style.borderRadius = '10px';
                         pageCard.style.overflow = 'hidden';
@@ -1680,39 +1742,91 @@ else:
                     return;
                 }
                 isSyncingLeft = true;
-                const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
-                if (leftMax <= 0) return;
-                const pct = leftBox.scrollTop / leftMax;
 
-                const activeRightBox = getActiveRightBox();
-                if (activeRightBox) {
-                    const rightMax = activeRightBox.scrollHeight - activeRightBox.clientHeight;
-                    if (rightMax > 0) {
-                        activeRightBox.scrollTop = pct * rightMax;
+                const leftPages = leftBox.querySelectorAll('[id^="left-page-"], .pdf-page-wrapper');
+                if (leftPages.length > 0) {
+                    const leftRect = leftBox.getBoundingClientRect();
+                    let activePage = 1;
+                    let minDiff = Infinity;
+                    leftPages.forEach(el => {
+                        const pageNum = parseInt(el.getAttribute('data-page') || el.id.replace('left-page-', ''));
+                        const r = el.getBoundingClientRect();
+                        const diff = Math.abs(r.top - leftRect.top);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            activePage = pageNum;
+                        }
+                    });
+                    scrollToRightPage(activePage);
+                } else {
+                    const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
+                    if (leftMax > 0) {
+                        const pct = leftBox.scrollTop / leftMax;
+                        const activeRight = getActiveRightBox();
+                        if (activeRight) {
+                            const rightMax = activeRight.scrollHeight - activeRight.clientHeight;
+                            if (rightMax > 0) activeRight.scrollTop = pct * rightMax;
+                        }
                     }
                 }
             });
 
             ['previewArea', 'cleanText', 'rawText'].forEach(id => {
                 const rightBox = document.getElementById(id);
-                if (rightBox) {
-                    rightBox.addEventListener('scroll', () => {
-                        if (isSyncingLeft) {
-                            isSyncingLeft = false;
-                            return;
-                        }
-                        isSyncingRight = true;
-                        const rightMax = rightBox.scrollHeight - rightBox.clientHeight;
-                        if (rightMax <= 0) return;
-                        const pct = rightBox.scrollTop / rightMax;
+                if (!rightBox) return;
 
-                        const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
-                        if (leftMax > 0) {
-                            leftBox.scrollTop = pct * leftMax;
+                rightBox.addEventListener('scroll', () => {
+                    if (isSyncingLeft) {
+                        isSyncingLeft = false;
+                        return;
+                    }
+                    isSyncingRight = true;
+
+                    const rightCards = rightBox.querySelectorAll('[id^="page-card-"], .stitch-card, [data-page]');
+                    if (rightCards.length > 0) {
+                        const rightRect = rightBox.getBoundingClientRect();
+                        let activePage = 1;
+                        let minDiff = Infinity;
+                        rightCards.forEach(el => {
+                            const pageNum = parseInt(el.getAttribute('data-page') || el.id.replace('page-card-', ''));
+                            if (!isNaN(pageNum)) {
+                                const r = el.getBoundingClientRect();
+                                const diff = Math.abs(r.top - rightRect.top);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    activePage = pageNum;
+                                }
+                            }
+                        });
+                        scrollToLeftPage(activePage);
+                    } else {
+                        const rightMax = rightBox.scrollHeight - rightBox.clientHeight;
+                        if (rightMax > 0) {
+                            const pct = rightBox.scrollTop / rightMax;
+                            const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
+                            if (leftMax > 0) leftBox.scrollTop = pct * leftMax;
                         }
-                    });
-                }
+                    }
+                });
             });
+        }
+
+        function scrollToLeftPage(pageNum) {
+            const leftBox = document.getElementById('originalViewer');
+            const target = leftBox ? leftBox.querySelector(`#left-page-${pageNum}, [data-page="${pageNum}"]`) : null;
+            if (leftBox && target) {
+                const targetTop = target.offsetTop - leftBox.offsetTop;
+                leftBox.scrollTo({ top: targetTop, behavior: 'smooth' });
+            }
+        }
+
+        function scrollToRightPage(pageNum) {
+            const activeRight = getActiveRightBox();
+            const target = activeRight ? activeRight.querySelector(`#page-card-${pageNum}, [data-page="${pageNum}"]`) : null;
+            if (activeRight && target) {
+                const targetTop = target.offsetTop - activeRight.offsetTop;
+                activeRight.scrollTo({ top: targetTop, behavior: 'smooth' });
+            }
         }
 
         function getActiveRightBox() {
@@ -1739,8 +1853,55 @@ else:
             document.getElementById('panelRaw').classList.toggle('active', tab === 'raw');
         }
 
+        window.currentCleanMarkdown = "";
+
+        function triggerImportFileInput() {
+            const input = document.getElementById('importFileInput');
+            if (input) input.click();
+        }
+
+        async function handleImportFileSelect(e) {
+            if (!e.target || !e.target.files || e.target.files.length === 0) return;
+            const file = e.target.files[0];
+            const statusMsg = document.getElementById('statusMsg');
+            statusMsg.innerText = `⏳ Đang import tệp ${file.name}...`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/v1/import/file', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Lỗi import: " + (err.detail || "Không thể nạp tệp"));
+                    statusMsg.innerText = "❌ Lỗi import tệp.";
+                    return;
+                }
+                const data = await response.json();
+                window.currentCleanMarkdown = data.markdown_text;
+
+                document.getElementById('cleanText').value = data.markdown_text;
+                document.getElementById('rawText').value = data.raw_text;
+                document.getElementById('previewArea').innerHTML = `
+                    <div class="stitch-card" style="animation:none;">
+                        <div class="page-break-divider">📄 TỆP IMPORT: ${data.filename}</div>
+                        <div class="stitch-content">${marked.parse(data.markdown_text)}</div>
+                    </div>
+                `;
+                statusMsg.innerText = `✨ Đã import thành công ${data.filename} vào Màn 2!`;
+            } catch (err) {
+                alert("Lỗi kết nối import: " + err.message);
+                statusMsg.innerText = "❌ Lỗi import tệp.";
+            } finally {
+                e.target.value = '';
+            }
+        }
+
         async function downloadDOCX() {
-            const markdown = document.getElementById('cleanText').value || document.getElementById('previewArea').innerText;
+            const markdown = window.currentCleanMarkdown || document.getElementById('cleanText').value || document.getElementById('previewArea').innerText;
             if (!markdown || !markdown.trim() || markdown.includes("Tài liệu đã được trích xuất")) {
                 alert("Chưa có dữ liệu trích xuất để tạo file Word (.docx)!");
                 return;
@@ -1771,28 +1932,47 @@ else:
         }
 
         function downloadPDF() {
-            const element = document.getElementById('previewArea');
-            if (!element || !element.innerText.trim() || element.innerText.includes("Tài liệu đã được trích xuất")) {
+            const previewArea = document.getElementById('previewArea');
+            if (!previewArea || !previewArea.innerText.trim() || previewArea.innerText.includes("Tài liệu đã được trích xuất")) {
                 alert("Chưa có dữ liệu trích xuất để tạo file PDF!");
                 return;
             }
             const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "ocr_result";
+
+            const clone = previewArea.cloneNode(true);
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            clone.style.top = '0';
+            clone.style.width = '800px';
+            clone.style.height = 'auto';
+            clone.style.overflow = 'visible';
+            clone.style.background = '#ffffff';
+            clone.style.padding = '20px';
+            document.body.appendChild(clone);
+
             const opt = {
                 margin:       [0.4, 0.4, 0.4, 0.4],
                 filename:     baseName + ".pdf",
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
+
             if (typeof html2pdf !== 'undefined') {
-                html2pdf().set(opt).from(element).save();
+                html2pdf().set(opt).from(clone).save().then(() => {
+                    if (clone.parentNode) document.body.removeChild(clone);
+                }).catch(err => {
+                    if (clone.parentNode) document.body.removeChild(clone);
+                    alert("Lỗi tạo file PDF: " + err.message);
+                });
             } else {
+                if (clone.parentNode) document.body.removeChild(clone);
                 window.print();
             }
         }
 
         function downloadTXT() {
-            const content = document.getElementById('cleanText').value || document.getElementById('rawText').value || document.getElementById('previewArea').innerText;
+            const content = window.currentCleanMarkdown || document.getElementById('cleanText').value || document.getElementById('rawText').value || document.getElementById('previewArea').innerText;
             if (!content || !content.trim() || content.includes("Tài liệu đã được trích xuất")) {
                 alert("Chưa có dữ liệu để tải về!");
                 return;
@@ -1816,7 +1996,7 @@ else:
             const rawPanel = document.getElementById('panelRaw');
 
             if (previewPanel.classList.contains('active')) {
-                textToCopy = document.getElementById('previewArea').innerText;
+                textToCopy = window.currentCleanMarkdown || document.getElementById('previewArea').innerText;
             } else if (cleanPanel.classList.contains('active')) {
                 textToCopy = document.getElementById('cleanText').value;
             } else if (rawPanel.classList.contains('active')) {
@@ -1877,6 +2057,7 @@ else:
             const cleanTextArea = document.getElementById('cleanText');
             const rawTextArea = document.getElementById('rawText');
 
+            window.currentCleanMarkdown = '';
             previewArea.innerHTML = '';
             cleanTextArea.value = '';
             rawTextArea.value = '';
@@ -1941,6 +2122,8 @@ else:
             const cleanTextArea = document.getElementById('cleanText');
             const rawTextArea = document.getElementById('rawText');
 
+            window.currentCleanMarkdown += (window.currentCleanMarkdown ? '\n\n' : '') + pageObj.clean_markdown;
+
             // Update Page Nav Buttons Real-time
             updatePageNavBar(pageObj.page_index, pageObj.total_pages);
 
@@ -1948,6 +2131,7 @@ else:
             const card = document.createElement('div');
             card.className = 'stitch-card';
             card.id = `page-card-${pageObj.page_index}`;
+            card.setAttribute('data-page', pageObj.page_index);
             card.innerHTML = `
                 <div class="stitch-laser-scan"></div>
                 <div class="page-break-divider">📄 TRANG ${pageObj.page_index} / ${pageObj.total_pages} (${pageObj.elapsed_seconds}s)</div>
