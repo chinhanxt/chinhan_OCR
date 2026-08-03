@@ -17,26 +17,150 @@
 
 ---
 
-## 🌟 Giới Thiệu (Overview)
+## 📖 Hướng Dẫn Cài Đặt & Sử Dụng Cho Máy Mới (Fresh Machine Setup)
 
-**chinhan_OCR** là hệ thống xử lý & trích xuất văn bản tài liệu đa trang (PDF, Images) thế hệ mới. Được xây dựng trên nền tảng mô hình AI **Baidu Unlimited-OCR**, hệ thống cho phép trích xuất tài liệu phức tạp, bảng biểu kinh phí, hợp đồng, báo cáo tài chính với độ chính xác tuyệt đối và tốc độ phản hồi tính bằng miligiây nhờ công nghệ **Server-Sent Events (SSE)**.
+Nếu bạn vừa `git clone` dự án này về một máy chủ/máy tính mới, hãy làm theo đúng **4 bước đơn giản** dưới đây để đưa hệ thống vào hoạt động:
+
+### ⚙️ Điều Kiện Cần (Prerequisites)
+* **Hệ điều hành**: Linux (Khuyên dùng Ubuntu 20.04 / 22.04 / 24.04 LTS).
+* **Card đồ họa**: Card rời NVIDIA có VRAM ≥ 8GB (Đã cài driver NVIDIA, gõ `nvidia-smi` thấy nhận card).
 
 ---
 
-## ✨ Tính Năng Nổi Bật (Key Features)
+### 🛠️ BƯỚC 1: Tải Mã Nguồn
 
-* **⚡ Real-Time SSE Streaming (`POST /v1/ocr/stream`)**:
-  * Giảm thời gian chờ phản hồi trang đầu tiên (Time-to-First-Byte) xuống **~3 giây**.
-  * Server vừa nhận dạng xong trang nào sẽ lập tức stream nội dung trang đó về giao diện client thời gian thực.
-* **🎨 Stitch Design Blueprint Web UI**:
-  * Giao diện người dùng sang trọng, hiện đại với hiệu ứng khung viền Neon Blueprint (`@keyframes stitchBorderDraw`), tia quét Laser Scan và dòng văn bản tuôn trào mượt mà.
-  * Tích hợp công cụ xem trước PDF/Ảnh gốc trực quan song song với kết quả Markdown.
-* **🔘 Interactive Page Navigation Tabs**:
-  * Tự động phân tách trang và tạo các tab chuyển nhanh (`[📄 Xem Tất Cả]`, `[Trang 1]`, `[Trang 2]`...). Bấm chuyển trang tức thì mà không cần load lại dữ liệu.
-* **📊 Bảo Toàn Cấu Trúc Bảng Biểu & Kinh Phí (220 DPI)**:
-  * Xử lý PDF ở độ phân giải 220 DPI sắc nét. Thuật toán tự động định dạng dòng kinh phí và bảng số liệu thành chuẩn **Markdown Table** (`| STT | Nội dung | Đơn giá | Thành tiền |`).
-* **📋 Smart Terminal CLI (`ocr_cli.py`)**:
-  * Hỗ trợ trích xuất nhanh từ dòng lệnh hoặc **tự động bắt ảnh từ Clipboard** (chụp màn hình là trích xuất ngay).
+Mở Terminal trên máy mới và chạy lệnh:
+```bash
+git clone https://github.com/chinhanxt/chinhan_OCR.git
+cd chinhan_OCR
+```
+
+---
+
+### 🛠️ BƯỚC 2: Cài Đặt Môi Trường Docker & GPU Driver (Nếu máy chưa có)
+
+Nếu máy tính mới của bạn **chưa cài Docker** hoặc **chưa nhận GPU trong Docker**, hãy copy toàn bộ lệnh dưới đây và dán vào Terminal để cài tự động:
+
+```bash
+# 1. Cài đặt Docker & Docker Compose
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo usermod -aG docker $USER
+
+# 2. Cài đặt NVIDIA Container Toolkit (Giúp Docker nhận Card GPU)
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/experimental/deb/nvidia-container-toolkit.list | \
+  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt update && sudo apt install -y nvidia-container-toolkit
+sudo systemctl restart docker
+```
+
+---
+
+### 🛠️ BƯỚC 3: Khởi Chạy Ứng Dụng (1-Click Start)
+
+Chạy lệnh Docker Compose để dựng container và tải mô hình AI tự động:
+
+```bash
+docker compose up -d
+```
+
+> 📌 **Lưu ý ở lần chạy đầu tiên**:
+> Container sẽ tự động build môi trường và tải mô hình AI **Baidu Unlimited-OCR** từ Hugging Face. Quá trình này mất khoảng **2 - 5 phút** tùy thuộc vào tốc độ mạng.
+
+---
+
+### 🛠️ BƯỚC 4: Kiểm Tra Trạng Thái Hoạt Động
+
+Theo dõi nhật ký khởi động của container bằng lệnh:
+```bash
+docker logs -f unlimited_ocr_unsloth_container
+```
+
+Khi Terminal xuất hiện dòng chữ sau là hệ thống đã sẵn sàng 100%:
+```text
+[INFO] Model loaded on GPU: NVIDIA GeForce RTX ...
+INFO: Application startup complete.
+INFO: Uvicorn running on http://0.0.0.0:8000
+```
+*(Bấm `Ctrl + C` để thoát khỏi màn hình xem log)*.
+
+---
+
+## 🖥️ HƯỚNG DẪN SỬ DỤNG HỆ THỐNG
+
+### 🎯 Cách 1: Sử Dụng Giao Diện Web UI (Dễ Nhất)
+
+1. Mở trình duyệt web (Chrome, Edge, Firefox...).
+2. Truy cập theo đường dẫn:
+   * **Nếu mở trên cùng máy**: `http://localhost:3000/`
+   * **Nếu mở từ máy khác trong mạng LAN**: `http://<IP_MÁY_CHỦ>:3000/` *(Ví dụ: `http://192.168.1.50:3000/`)*
+3. **Cách dùng**: Kéo thả tệp PDF hoặc ảnh tài liệu vào ô tải lên. Kết quả OCR và bảng biểu sẽ hiển thị thời gian thực theo từng trang!
+
+> 💡 **Truy cập từ xa qua SSH (SSH Tunneling)**:
+> Nếu bạn truy cập máy chủ qua SSH từ máy tính cá nhân, hãy chạy lệnh forward port ở Terminal máy cá nhân:
+> ```bash
+> ssh -L 3000:localhost:3000 user@<IP_MÁY_CHỦ>
+> ```
+> Sau đó mở trình duyệt máy cá nhân tại: `http://localhost:3000/`
+
+---
+
+### 💻 Cách 2: Sử Dụng Công Cụ Dòng Lệnh Terminal (CLI Tool)
+
+Bạn có thể trích xuất nhanh tài liệu ngay trong Terminal mà không cần mở trình duyệt:
+
+1. Cài đặt thư viện hỗ trợ (chỉ cần chạy 1 lần):
+   ```bash
+   pip install requests pymupdf pillow
+   ```
+2. **Trích xuất 1 tệp Ảnh hoặc PDF bất kỳ**:
+   ```bash
+   python3 scripts/ocr_cli.py /path/to/document.pdf -o output.txt
+   ```
+3. **Trích xuất từ Ảnh Chụp Màn Hình (Clipboard)**:
+   Chụp màn hình bất kỳ (`PrintScreen` / `Ctrl+Shift+PrintScreen`), sau đó gõ:
+   ```bash
+   python3 scripts/ocr_cli.py
+   ```
+
+---
+
+### 📡 Cách 3: Tích Hợp API Vào Code Dự Án Của Bạn
+
+#### **Ví dụ bằng cURL (Terminal)**:
+```bash
+curl -X 'POST' \
+  'http://localhost:3000/v1/ocr?mode=gundam' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@/path/to/your_file.pdf'
+```
+
+#### **Ví dụ bằng Python**:
+```python
+import requests
+
+url = "http://localhost:3000/v1/ocr"
+files = {"file": open("tai_lieu.pdf", "rb")}
+params = {"mode": "gundam"}
+
+response = requests.post(url, files=files, params=params)
+result = response.json()
+
+print("📝 Kết quả Markdown:")
+print(result["clean_markdown"])
+```
+
+---
+
+## ✨ Các Tính Năng Nổi Bật (Key Features)
+
+* **⚡ Real-Time SSE Streaming (`POST /v1/ocr/stream`)**: Giảm thời gian chờ trang đầu tiên xuống **~3 giây**.
+* **🎨 Stitch Design Blueprint Web UI**: Giao diện Neon Blueprint lung linh, xem trước PDF/Ảnh gốc song song với kết quả Markdown.
+* **🔘 Page Navigation Tabs**: Tự động chia trang và tạo tab lọc nhanh (`[📄 Xem Tất Cả]`, `[Trang 1]`, `[Trang 2]`...).
+* **📊 Nhận Dạng Bảng Biểu Kinh Phí (220 DPI)**: Tự động chuyển đổi bảng số liệu thành Markdown Table (`| STT | Nội dung | Số lượng |`).
 
 ---
 
@@ -54,139 +178,33 @@ graph TD
 
 ---
 
-## ⚡ 4 Giải Pháp Tối Ưu Tốc Độ GPU
-
-1. **CPU Parallel Pre-rendering (`ThreadPoolExecutor`)**: Pre-render toàn bộ các trang PDF song song ở RAM-disk tốc độ cao trong `<0.2s`.
-2. **Tensor Core TF32 Acceleration**: Kích hoạt `torch.set_float32_matmul_precision('high')` & `allow_tf32` tối ưu cho dòng card NVIDIA RTX.
-3. **`torch.inference_mode()`**: Triệt tiêu hoàn toàn chi phí theo dõi bộ nhớ Autograd Tracking trong quá trình suy luận Transformer.
-4. **Dynamic Stream Ticker (10ms)**: Tốc độ đẩy dòng văn bản lên giao diện vô cùng mượt mà, phản hồi tức thì.
-
----
-
-## 🛠️ Yêu Cầu Hệ Thống (Requirements)
-
-| Thành phần | Yêu cầu tối thiểu | Khuyên dùng |
-| :--- | :--- | :--- |
-| **OS** | Linux (Ubuntu 20.04+) | Ubuntu 22.04 LTS / 24.04 LTS |
-| **GPU** | NVIDIA GPU (VRAM ≥ 8GB) | NVIDIA RTX 3060 / 4060 / 5060 Ti trở lên |
-| **NVIDIA Driver** | ≥ 535.xx | Latest Production Branch |
-| **Môi trường** | Docker Engine & Docker Compose | NVIDIA Container Toolkit đã cài đặt |
-
----
-
-## 🚀 Cài Đặt & Khởi Chạy Nhanh (Quickstart)
-
-### 1. Tải Mã Nguồn
-
-```bash
-git clone https://github.com/chinhanxt/chinhan_OCR.git
-cd chinhan_OCR
-```
-
-### 2. Khởi Chạy Bằng Docker Compose (Khuyên dùng)
-
-```bash
-docker compose up -d
-```
-
-### 3. Theo Dõi Nhật Ký Khởi Động
-
-```bash
-docker logs -f unlimited_ocr_unsloth_container
-```
-*Chờ thông báo `Model loaded on GPU: NVIDIA GeForce RTX ...` và `Uvicorn running on http://0.0.0.0:8000` là hệ thống đã sẵn sàng!*
-
----
-
-## 🌐 Trải Nghiệm Giao Diện Web UI
-
-Sau khi container khởi chạy thành công:
-
-* **Mở trực tiếp trên máy chủ / Mạng nội bộ (LAN)**:
-  👉 **`http://<SERVER_IP>:3000/`** *(Ví dụ: `http://192.168.92.139:3000/`)*
-* **Tài liệu API Swagger**:
-  👉 **`http://<SERVER_IP>:3000/docs`**
-
-> 💡 **Mẹo (SSH Remote Tunneling)**: Nếu bạn dùng SSH từ xa kết nối vào server, hãy forward port 3000 bằng lệnh sau ở máy cá nhân:
-> ```bash
-> ssh -L 3000:localhost:3000 user@<SERVER_IP>
-> ```
-> Sau đó mở trình duyệt tại: **`http://localhost:3000/`**
-
----
-
-## 💻 Sử Dụng Terminal CLI Tool (`ocr_cli.py`)
-
-Công cụ dòng lệnh nhỏ gọn cho phép trích xuất nhanh tài liệu:
-
-### 1. Trích xuất file Ảnh / PDF bất kỳ:
-```bash
-python3 ocr_cli.py /path/to/document.pdf -o output.txt
-```
-
-### 2. Trích xuất trực tiếp từ Ảnh Chụp Màn Hình (Clipboard):
-Chỉ cần bấm phím chụp màn hình (`PrintScreen` / `Ctrl+Shift+PrintScreen`), sau đó gõ:
-```bash
-python3 ocr_cli.py
-```
-*Script sẽ tự động lấy ảnh trong Clipboard, gửi tới OCR Server và in kết quả ra màn hình!*
-
-### 3. Tùy chọn Chế độ Xử Lý (`--mode`):
-* `gundam` *(Mặc định)*: Crop chi tiết tỉ mỉ, tối ưu cho bảng biểu, văn bản phức tạp.
-* `base`: Xử lý toàn trang ở kích thước chuẩn.
-
----
-
-## 📡 Danh Sách API Endpoints
-
-### 1. Real-Time SSE Stream OCR (`POST /v1/ocr/stream`)
-Stream kết quả trực tiếp theo từng trang ngay khi nhận dạng xong.
-* **URL**: `/v1/ocr/stream?mode=gundam`
-* **Method**: `POST`
-* **Header**: `Content-Type: multipart/form-data`
-* **Body**: `file` (File PDF hoặc Ảnh)
-* **Response**: `text/event-stream`
-
-### 2. Standard JSON OCR (`POST /v1/ocr`)
-Trả về toàn bộ kết quả dưới dạng JSON hoàn chỉnh sau khi xử lý xong tất cả các trang.
-* **URL**: `/v1/ocr?mode=gundam`
-* **Method**: `POST`
-* **Response**:
-```json
-{
-  "parsed_text": "# Tiêu đề tài liệu\n\n| STT | Nội dung | Số lượng |\n...",
-  "clean_markdown": "# Tiêu đề tài liệu...",
-  "page_count": 3,
-  "elapsed_time": 4.12
-}
-```
-
-### 3. Health & System Info
-* `GET /health`: Kiểm tra sức khỏe hệ thống.
-* `GET /api/info`: Xem thông số GPU và trạng thái mô hình.
-
----
-
 ## 📂 Cấu Trúc Thư Mục Dự Án (Directory Layout)
 
 ```
 chinhan_OCR/
-├── app.py                # FastAPI Server + Web UI Studio Engine
-├── Dockerfile            # Container build spec (PyTorch CUDA + Transformers)
-├── docker-compose.yml    # Cấu hình Docker Compose chia sẻ NVIDIA GPU
-├── ocr_cli.py            # Terminal CLI Tool hỗ trợ Clipboard
-├── requirements.txt      # Thư viện Python phụ thuộc
-├── test_api.py           # Script kiểm thử REST API
-├── test_stream_endpoint.py # Script kiểm thử SSE Stream Endpoint
-└── README.md             # Tài liệu hướng dẫn sử dụng
+├── 📁 assets/                 # Hình ảnh logo, tài liệu minh họa & GIF demo
+├── 📁 scripts/                # Công cụ CLI & script kiểm thử
+│   ├── ocr_cli.py             # Terminal CLI Tool hỗ trợ Clipboard
+│   ├── test_api.py            # Script test REST API
+│   └── test_stream_endpoint.py # Script test SSE Stream Endpoint
+├── 📁 src/                    # Mã nguồn Python các module (Core Engine, API, Web UI)
+│   ├── config.py              # Cấu hình GPU & môi trường
+│   ├── api/                   # FastAPI Endpoints
+│   ├── core/                  # Engine suy luận Model & PDF Pre-render
+│   └── web/                   # Web Studio Template Engine
+├── 📄 app.py                  # Server ứng dụng FastAPI
+├── 📄 Dockerfile              # Cấu hình môi trường Docker
+├── 📄 docker-compose.yml      # Cấu hình Docker Compose GPU
+├── 📄 requirements.txt        # Danh sách thư viện Python
+└── 📄 README.md               # Hướng dẫn sử dụng
 ```
 
 ---
 
 ## 📜 Giấy Phép & Ghi Nhận (License & Acknowledgments)
 
-Dự án được xây dựng và tối ưu dựa trên mô hình học máy tiên tiến **[Baidu Unlimited-OCR](https://github.com/baidu/Unlimited-OCR)**. 
-Mã nguồn wrapper API, tối ưu tăng tốc GPU và giao diện Web UI thuộc bản quyền của dự án **chinhan_OCR**.
+Dự án được phát triển và tối ưu dựa trên mô hình học máy **[Baidu Unlimited-OCR](https://github.com/baidu/Unlimited-OCR)**.
+Mã nguồn wrapper API, tối ưu tăng tốc GPU và giao diện Web UI thuộc bản quyền dự án **chinhan_OCR**.
 
 <div align="center">
   <b>Made with ❤️ for High-Performance AI Document Processing</b>
