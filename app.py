@@ -5,22 +5,43 @@ import tempfile
 import logging
 import traceback
 import shutil
-import fitz
+from src.core.corrector import correct_vietnamese_text
+try:
+    import fitz
+except ImportError:
+    fitz = None
+
 import asyncio
+
 try:
     import gradio as gr
     HAS_GRADIO = True
 except ImportError:
     HAS_GRADIO = False
+
 from typing import Optional
-from fastapi import FastAPI, File, UploadFile, Query, HTTPException
-from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
+
+try:
+    from fastapi import FastAPI, File, UploadFile, Query, HTTPException
+    from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
+    from fastapi.middleware.cors import CORSMiddleware
+    HAS_FASTAPI = True
+except ImportError:
+    HAS_FASTAPI = False
+    def DummyFunc(*args, **kwargs):
+        return None
+    File = UploadFile = Query = HTTPException = DummyFunc
+    JSONResponse = HTMLResponse = StreamingResponse = CORSMiddleware = None
+
 import json
-import torch
+try:
+    import torch
+except ImportError:
+    torch = None
+
 from concurrent.futures import ThreadPoolExecutor
 
-if torch.cuda.is_available():
+if torch and torch.cuda.is_available():
     try:
         torch.set_float32_matmul_precision('high')
         torch.backends.cuda.matmul.allow_tf32 = True
@@ -32,20 +53,32 @@ if torch.cuda.is_available():
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("unlimited_ocr_app")
 
-app = FastAPI(
-    title="Unlimited-OCR API Server with Unsloth / PyTorch GPU",
-    description="High-performance OCR & Document Parsing API hosting Baidu Unlimited-OCR",
-    version="1.0.0"
-)
+if HAS_FASTAPI:
+    app = FastAPI(
+        title="Unlimited-OCR API Server with Unsloth / PyTorch GPU",
+        description="High-performance OCR & Document Parsing API hosting Baidu Unlimited-OCR",
+        version="1.0.0"
+    )
 
-# Enable CORS for frontend clients
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    # Enable CORS for frontend clients
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    class DummyApp:
+        def post(self, *args, **kwargs):
+            return lambda fn: fn
+        def get(self, *args, **kwargs):
+            return lambda fn: fn
+        def on_event(self, *args, **kwargs):
+            return lambda fn: fn
+        def add_middleware(self, *args, **kwargs):
+            pass
+    app = DummyApp()
 
 MODEL_NAME = os.getenv("MODEL_NAME", "baidu/Unlimited-OCR")
 tokenizer = None
@@ -197,7 +230,10 @@ def clean_ocr_to_markdown(raw_text: str, page_image_path: str = None) -> str:
     if not raw_text:
         return ""
     
-    lines = raw_text.splitlines()
+    # Apply administrative text corrections
+    corrected_raw = correct_vietnamese_text(raw_text)
+    
+    lines = corrected_raw.splitlines()
     clean_lines = []
     
     for line in lines:
