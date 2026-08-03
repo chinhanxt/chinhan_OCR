@@ -1769,104 +1769,55 @@ else:
             }
         }
 
-        let isSyncingLeft = false;
-        let isSyncingRight = false;
+        let activeScrollSource = null;
+        let scrollTimer = null;
 
         function initSyncScroll() {
             const leftBox = document.getElementById('originalViewer');
             if (!leftBox) return;
 
-            leftBox.addEventListener('scroll', () => {
-                if (isSyncingRight) {
-                    isSyncingRight = false;
+            function syncScroll(source) {
+                if (activeScrollSource && activeScrollSource !== source) return;
+                activeScrollSource = source;
+
+                const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
+                const activeRight = getActiveRightBox();
+                if (!activeRight) {
+                    activeScrollSource = null;
                     return;
                 }
-                isSyncingLeft = true;
+                const rightMax = activeRight.scrollHeight - activeRight.clientHeight;
 
-                const leftPages = leftBox.querySelectorAll('[id^="left-page-"], .pdf-page-wrapper');
-                if (leftPages.length > 0) {
-                    const leftRect = leftBox.getBoundingClientRect();
-                    let activePage = 1;
-                    let minDiff = Infinity;
-                    leftPages.forEach(el => {
-                        const pageNum = parseInt(el.getAttribute('data-page') || el.id.replace('left-page-', ''));
-                        const r = el.getBoundingClientRect();
-                        const diff = Math.abs(r.top - leftRect.top);
-                        if (diff < minDiff) {
-                            minDiff = diff;
-                            activePage = pageNum;
-                        }
-                    });
-                    scrollToRightPage(activePage);
-                } else {
-                    const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
-                    if (leftMax > 0) {
-                        const pct = leftBox.scrollTop / leftMax;
-                        const activeRight = getActiveRightBox();
-                        if (activeRight) {
-                            const rightMax = activeRight.scrollHeight - activeRight.clientHeight;
-                            if (rightMax > 0) activeRight.scrollTop = pct * rightMax;
-                        }
+                if (source === 'left') {
+                    if (leftMax > 0 && rightMax > 0) {
+                        const ratio = leftBox.scrollTop / leftMax;
+                        activeRight.scrollTop = ratio * rightMax;
+                    }
+                } else if (source === 'right') {
+                    if (leftMax > 0 && rightMax > 0) {
+                        const ratio = activeRight.scrollTop / rightMax;
+                        leftBox.scrollTop = ratio * leftMax;
                     }
                 }
-            });
+
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(() => {
+                    activeScrollSource = null;
+                }, 40);
+            }
+
+            leftBox.addEventListener('scroll', () => {
+                requestAnimationFrame(() => syncScroll('left'));
+            }, { passive: true });
 
             ['previewArea', 'cleanText', 'rawText'].forEach(id => {
                 const rightBox = document.getElementById(id);
-                if (!rightBox) return;
-
-                rightBox.addEventListener('scroll', () => {
-                    if (isSyncingLeft) {
-                        isSyncingLeft = false;
-                        return;
-                    }
-                    isSyncingRight = true;
-
-                    const rightCards = rightBox.querySelectorAll('[id^="page-card-"], .stitch-card, [data-page]');
-                    if (rightCards.length > 0) {
-                        const rightRect = rightBox.getBoundingClientRect();
-                        let activePage = 1;
-                        let minDiff = Infinity;
-                        rightCards.forEach(el => {
-                            const pageNum = parseInt(el.getAttribute('data-page') || el.id.replace('page-card-', ''));
-                            if (!isNaN(pageNum)) {
-                                const r = el.getBoundingClientRect();
-                                const diff = Math.abs(r.top - rightRect.top);
-                                if (diff < minDiff) {
-                                    minDiff = diff;
-                                    activePage = pageNum;
-                                }
-                            }
-                        });
-                        scrollToLeftPage(activePage);
-                    } else {
-                        const rightMax = rightBox.scrollHeight - rightBox.clientHeight;
-                        if (rightMax > 0) {
-                            const pct = rightBox.scrollTop / rightMax;
-                            const leftMax = leftBox.scrollHeight - leftBox.clientHeight;
-                            if (leftMax > 0) leftBox.scrollTop = pct * leftMax;
-                        }
-                    }
-                });
+                if (rightBox) {
+                    rightBox.addEventListener('scroll', () => {
+                        requestAnimationFrame(() => syncScroll('right'));
+                    }, { passive: true });
+                }
             });
-        }
-
-        function scrollToLeftPage(pageNum) {
-            const leftBox = document.getElementById('originalViewer');
-            const target = leftBox ? leftBox.querySelector(`#left-page-${pageNum}, [data-page="${pageNum}"]`) : null;
-            if (leftBox && target) {
-                const targetTop = target.offsetTop - leftBox.offsetTop;
-                leftBox.scrollTo({ top: targetTop, behavior: 'smooth' });
-            }
-        }
-
-        function scrollToRightPage(pageNum) {
-            const activeRight = getActiveRightBox();
-            const target = activeRight ? activeRight.querySelector(`#page-card-${pageNum}, [data-page="${pageNum}"]`) : null;
-            if (activeRight && target) {
-                const targetTop = target.offsetTop - activeRight.offsetTop;
-                activeRight.scrollTo({ top: targetTop, behavior: 'smooth' });
-            }
         }
 
         function getActiveRightBox() {
